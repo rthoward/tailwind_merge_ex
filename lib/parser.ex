@@ -21,6 +21,11 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
     |> ascii_char([?]])
 
+  arbitrary_variable =
+    ascii_char([?(])
+    |> ascii_string([?a..?z, ?-], min: 1)
+    |> ascii_char([?)])
+
   scale_sizing =
     choice([
       string("auto"),
@@ -70,14 +75,24 @@ defmodule TailwindMerge.Parser do
     |> concat(scale_sizing)
     |> tag(:height)
 
+  color =
+  ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
+  |> tag(:color)
+
   custom =
     ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
     |> tag(:custom)
+
+  scale =
+    string("scale-")
+    |> choice([color, arbitrary_value, arbitrary_variable])
+    |> tag(:scale)
 
   class =
     choice([
       display,
       height,
+      scale,
       custom
     ])
 
