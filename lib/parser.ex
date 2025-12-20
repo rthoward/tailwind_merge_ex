@@ -6,25 +6,112 @@ defmodule TailwindMerge.Parser do
     |> string("/")
     |> integer(min: 1)
 
-  tshirt =
+  _tshirt =
     optional(integer(min: 1))
     |> choice([
       string("xs"),
       string("md"),
       string("lg"),
-      string("xl"),
-    ]
-    )
+      string("xl")
+    ])
+
+  blend_mode =
+    choice([
+      string("normal"),
+      string("multiply"),
+      string("screen"),
+      string("overlay"),
+      string("darken"),
+      string("lighten"),
+      string("color-dodge"),
+      string("color-burn"),
+      string("hard-light"),
+      string("soft-light"),
+      string("difference"),
+      string("exclusion"),
+      string("hue"),
+      string("saturation"),
+      string("color"),
+      string("luminosity")
+    ])
+
+  none = string("none")
 
   arbitrary_value =
     ascii_char([?[])
-    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?%], min: 1)
     |> ascii_char([?]])
 
-  arbitrary_variable =
-    ascii_char([?(])
-    |> ascii_string([?a..?z, ?-], min: 1)
-    |> ascii_char([?)])
+  basic_unit =
+    choice([
+      string("%"),
+      string("px"),
+      string("rem"),
+      string("em"),
+      string("pt"),
+      string("pc"),
+      string("in"),
+      string("cm"),
+      string("mm")
+    ])
+
+  font_unit =
+    choice([
+      string("cap"),
+      string("ch"),
+      string("ex"),
+      string("rlh"),
+      string("lh")
+    ])
+
+  viewport_unit =
+    optional(choice([string("s"), string("d"), string("l")]))
+    |> string("v")
+    |> choice([
+      string("min"),
+      string("max"),
+      string("h"),
+      string("w"),
+      string("i"),
+      string("b")
+    ])
+
+  container_unit =
+    string("cq")
+    |> choice([
+      string("min"),
+      string("max"),
+      string("w"),
+      string("h"),
+      string("i"),
+      string("b")
+    ])
+
+  numeric_with_unit =
+    integer(min: 1)
+    |> choice([
+      container_unit,
+      viewport_unit,
+      font_unit,
+      basic_unit
+    ])
+
+  css_function =
+    choice([
+      string("calc"),
+      string("min"),
+      string("max"),
+      string("clamp")
+    ])
+    |> string("(")
+    |> repeat(
+      lookahead_not(string(")"))
+      |> utf8_char([])
+    )
+    |> string(")")
+
+  arbitrary_length =
+    choice([css_function, numeric_with_unit, string("0")])
 
   scale_sizing =
     choice([
@@ -76,25 +163,63 @@ defmodule TailwindMerge.Parser do
     |> tag(:height)
 
   color =
-  ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
-  |> tag(:color)
-
-  custom =
     ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
-    |> tag(:custom)
+    |> tag(:color)
 
-  scale =
-    string("scale-")
-    |> choice([color, arbitrary_value, arbitrary_variable])
-    |> tag(:scale)
+  custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-], min: 1)
+
+  stroke_width =
+    string("stroke-")
+    |> choice([
+      integer(min: 1),
+      arbitrary_length,
+      arbitrary_value
+    ])
+    |> tag(:stroke_width)
+
+  stroke =
+    string("stroke-")
+    |> choice([none, color])
+    |> tag(:stroke)
+
+  grayscale =
+    string("grayscale")
+    |> choice([
+      eos(),
+      ascii_char([?-]) |> concat(arbitrary_length),
+      ascii_char([?-]) |> concat(arbitrary_value)
+    ])
+    |> tag(:grayscale)
+
+  grow =
+    string("grow")
+    |> choice([
+      eos(),
+      ascii_char([?-]) |> concat(arbitrary_length),
+      ascii_char([?-]) |> concat(arbitrary_value)
+    ])
+    |> tag(:grow)
+
+  mix_blend =
+    string("mix-blend-")
+    |> choice([
+      string("plus-darker"),
+      string("plus-lighter"),
+      blend_mode
+    ])
+    |> tag(:mix_blend)
 
   class =
     choice([
       display,
       height,
-      scale,
+      stroke_width,
+      stroke,
+      grayscale,
+      grow,
+      mix_blend,
       custom
     ])
 
-  defparsec :class, class
+  defparsec(:class, class)
 end

@@ -19,24 +19,23 @@ defmodule TailwindMerge do
 
   defp merge(classes) do
     classes
-    |> Enum.map(&parse/1)
-    |> resolve()
+    |> Enum.reverse()
+    |> Enum.reduce({MapSet.new(), []}, fn class, {seen_groups, acc} ->
+      group = group(class)
+      keep? = !group || !MapSet.member?(seen_groups, group)
+      seen_groups = MapSet.put(seen_groups, group)
+
+      if keep?,
+        do: {seen_groups, [class | acc]},
+        else: {seen_groups, acc}
+    end)
+    |> elem(1)
   end
 
-  defp parse(class), do: %{class: class, group: group(class)}
-
-  defp resolve(classes) do
-    classes
-    |> Enum.reverse()
-    |> Enum.uniq_by(& &1.group)
-    |> Enum.reverse()
-    |> Enum.map(& &1.class)
-  end
-
-  def group(class) do
+  defp group(class) do
     case Parser.class(class) do
       {:ok, [{grouping, _}], _, _, _, _} -> grouping
-      _ -> :custom
+      _ -> nil
     end
   end
 
