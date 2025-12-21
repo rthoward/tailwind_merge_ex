@@ -1,4 +1,4 @@
-defmodule TailwindMerge.ConflictingGroups do
+defmodule TailwindMerge.Conflicts do
   @moduledoc """
   Cross-group conflicts: when a class from one group should remove classes from other groups
   Reference: https://github.com/dcastil/tailwind-merge/blob/v2.5.5/src/lib/default-config.ts#L2234-L2340
@@ -203,5 +203,10 @@ defmodule TailwindMerge.ConflictingGroups do
 
   @conflicting_groups Map.new(@conflicting_groups_config, fn {k, v} -> {k, MapSet.new(v)} end)
 
-  def conflicts(group), do: @conflicting_groups[group] || MapSet.new()
+  def groups(group) do
+    @conflicting_groups
+    |> Map.get(group, [])
+    |> MapSet.new()
+    |> MapSet.put(group)
+  end
 end

@@ -3,7 +3,7 @@ defmodule TailwindMerge do
   Documentation for `TailwindMerge`.
   """
 
-  alias TailwindMerge.ConflictingGroups
+  alias TailwindMerge.Conflicts
   alias TailwindMerge.Parsed
 
   @doc """
@@ -24,11 +24,9 @@ defmodule TailwindMerge do
     |> Enum.reverse()
     |> Enum.reduce({MapSet.new(), []}, fn parsed, {seen, acc} ->
       key = Parsed.key(parsed)
-      conflicting_groups = ConflictingGroups.conflicts(parsed.group)
+      conflicting_groups = Conflicts.groups(parsed.group)
       conflicting_keys = Enum.map(conflicting_groups, &Parsed.key(%Parsed{parsed | group: &1}))
-      conflicting_keys = [key | conflicting_keys]
-
-      keep? = !Enum.any?([key | conflicting_keys], &MapSet.member?(seen, &1))
+      keep? = !Enum.any?(conflicting_keys, &MapSet.member?(seen, &1))
       seen = MapSet.put(seen, key)
 
       if keep?,
