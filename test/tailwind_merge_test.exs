@@ -22,4 +22,10 @@ defmodule TailwindMergeTest do
     assert tw("hover:underline underline") == "hover:underline underline"
     assert tw("hover:underline hover:no-underline") == "hover:no-underline"
   end
+
+  test "cross-group conflicts" do
+    # overflow conflicts with overflow-x and overflow-y
+    assert tw("overflow-auto overflow-x-hidden") == "overflow-x-hidden"
+    assert tw("overflow-x-auto overflow-hidden") == "overflow-hidden"
+  end
 end

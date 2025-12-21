@@ -409,6 +409,33 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration)
 
+  # Overflow: overflow-{value}
+  overflow_value =
+    choice([
+      string("auto"),
+      string("hidden"),
+      string("clip"),
+      string("visible"),
+      string("scroll")
+    ])
+
+  overflow =
+    string("overflow-")
+    |> concat(overflow_value)
+    |> tag(:overflow)
+
+  # Overflow X: overflow-x-{value}
+  overflow_x =
+    string("overflow-x-")
+    |> concat(overflow_value)
+    |> tag(:overflow_x)
+
+  # Overflow Y: overflow-y-{value}
+  overflow_y =
+    string("overflow-y-")
+    |> concat(overflow_value)
+    |> tag(:overflow_y)
+
   # Custom fallback: matches any unrecognized class
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
@@ -417,6 +444,9 @@ defmodule TailwindMerge.Parser do
     choice([
       display,
       height,
+      overflow_x,
+      overflow_y,
+      overflow,
       stroke_width,
       stroke,
       grayscale,
