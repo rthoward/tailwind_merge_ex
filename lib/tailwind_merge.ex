@@ -19,24 +19,48 @@ defmodule TailwindMerge do
 
   defp merge(classes) do
     classes
+    |> Enum.map(&parse/1)
     |> Enum.reverse()
-    |> Enum.reduce({MapSet.new(), []}, fn class, {seen_groups, acc} ->
-      group = group(class)
-      keep? = !group || !MapSet.member?(seen_groups, group)
-      seen_groups = MapSet.put(seen_groups, group)
+    |> Enum.reduce({MapSet.new(), []}, fn parsed, {seen, acc} ->
+      keep? = !MapSet.member?(seen, parsed.key)
+      seen = MapSet.put(seen, parsed.key)
 
       if keep?,
-        do: {seen_groups, [class | acc]},
-        else: {seen_groups, acc}
+        do: {seen, [parsed.class | acc]},
+        else: {seen, acc}
     end)
     |> elem(1)
   end
 
-  defp group(class) do
-    case Parser.class(class) do
-      {:ok, [{grouping, _}], _, _, _, _} -> grouping
-      _ -> nil
-    end
+  defp parse(class) do
+    normalized_class = String.replace(class, ~r/(^!|!$)/, "")
+    important? = normalized_class != class
+
+    {normalized_class, modifiers} =
+      normalized_class
+      |> String.split(":")
+      |> Enum.reverse()
+      |> case do
+        [class] -> {class, []}
+        [class | modifiers] -> {class, modifiers}
+      end
+
+    group =
+      case Parser.class(normalized_class) do
+        {:ok, [{grouping, _}], _, _, _, _} -> grouping
+        _ -> normalized_class
+      end
+
+    modifiers = Enum.join(modifiers, ":")
+    key = {modifiers, important?, group}
+
+    %{
+      class: class,
+      group: group,
+      modifiers: "",
+      important?: important?,
+      key: key
+    }
   end
 
   def flatten(nil), do: []

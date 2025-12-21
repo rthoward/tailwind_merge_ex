@@ -14,5 +14,12 @@ defmodule TailwindMergeTest do
     assert tw("grayscale-0 grayscale-[50%]") == "grayscale-[50%]"
     assert tw("grow grow-[2]") == "grow-[2]"
     assert tw(["grow", [nil, false, [["grow-[2]"]]]]) == "grow-[2]"
+
+    assert tw("!flex block") == "!flex block"
+    assert tw("!flex !block") == "!block"
+    assert tw("!flex block!") == "block!"
+
+    assert tw("hover:underline underline") == "hover:underline underline"
+    assert tw("hover:underline hover:no-underline") == "hover:no-underline"
   end
 end

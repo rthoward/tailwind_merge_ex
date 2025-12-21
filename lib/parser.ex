@@ -209,6 +209,15 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:mix_blend)
 
+  text_decoration =
+    choice([
+      string("underline"),
+      string("overline"),
+      string("line-through"),
+      string("no-underline")
+    ])
+    |> tag(:text_decoration)
+
   class =
     choice([
       display,
@@ -218,6 +227,7 @@ defmodule TailwindMerge.Parser do
       grayscale,
       grow,
       mix_blend,
+      text_decoration,
       custom
     ])
 
