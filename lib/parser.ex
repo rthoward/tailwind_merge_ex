@@ -343,6 +343,683 @@ defmodule TailwindMerge.Parser do
   # ===== Class Group Parsers =====
   # These parsers recognize specific Tailwind CSS class groups
 
+  # ===== Visual Effects Classes =====
+
+  # Backgrounds
+  bg_attachment =
+    string("bg-")
+    |> choice([
+      string("fixed"),
+      string("local"),
+      string("scroll")
+    ])
+    |> eos()
+    |> tag(:bg_attachment)
+
+  bg_clip =
+    string("bg-clip-")
+    |> choice([
+      string("border"),
+      string("padding"),
+      string("content"),
+      string("text")
+    ])
+    |> eos()
+    |> tag(:bg_clip)
+
+  bg_origin =
+    string("bg-origin-")
+    |> choice([
+      string("border"),
+      string("padding"),
+      string("content")
+    ])
+    |> eos()
+    |> tag(:bg_origin)
+
+  bg_position =
+    string("bg-")
+    |> choice([
+      string("bottom"),
+      string("center"),
+      string("left-bottom"),
+      string("left-top"),
+      string("left"),
+      string("right-bottom"),
+      string("right-top"),
+      string("right"),
+      string("top"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:bg_position)
+
+  bg_repeat =
+    string("bg-")
+    |> choice([
+      string("repeat-x"),
+      string("repeat-y"),
+      string("repeat-round"),
+      string("repeat-space"),
+      string("no-repeat"),
+      string("repeat")
+    ])
+    |> eos()
+    |> tag(:bg_repeat)
+
+  bg_size =
+    string("bg-")
+    |> choice([
+      string("auto"),
+      string("cover"),
+      string("contain"),
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:bg_size)
+
+  bg_image =
+    string("bg-")
+    |> choice([
+      string("none"),
+      string("gradient-to-t"),
+      string("gradient-to-tr"),
+      string("gradient-to-r"),
+      string("gradient-to-br"),
+      string("gradient-to-b"),
+      string("gradient-to-bl"),
+      string("gradient-to-l"),
+      string("gradient-to-tl"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:bg_image)
+
+  gradient_from_pos =
+    string("from-")
+    |> choice([
+      string("0%"),
+      string("5%"),
+      string("10%"),
+      string("15%"),
+      string("20%"),
+      string("25%"),
+      string("30%"),
+      string("35%"),
+      string("40%"),
+      string("45%"),
+      string("50%"),
+      string("55%"),
+      string("60%"),
+      string("65%"),
+      string("70%"),
+      string("75%"),
+      string("80%"),
+      string("85%"),
+      string("90%"),
+      string("95%"),
+      string("100%"),
+      parsec(:arbitrary_value)
+    ])
+    |> tag(:gradient_from_pos)
+
+  gradient_via_pos =
+    string("via-")
+    |> choice([
+      string("0%"),
+      string("5%"),
+      string("10%"),
+      string("15%"),
+      string("20%"),
+      string("25%"),
+      string("30%"),
+      string("35%"),
+      string("40%"),
+      string("45%"),
+      string("50%"),
+      string("55%"),
+      string("60%"),
+      string("65%"),
+      string("70%"),
+      string("75%"),
+      string("80%"),
+      string("85%"),
+      string("90%"),
+      string("95%"),
+      string("100%"),
+      parsec(:arbitrary_value)
+    ])
+    |> tag(:gradient_via_pos)
+
+  gradient_to_pos =
+    string("to-")
+    |> choice([
+      string("0%"),
+      string("5%"),
+      string("10%"),
+      string("15%"),
+      string("20%"),
+      string("25%"),
+      string("30%"),
+      string("35%"),
+      string("40%"),
+      string("45%"),
+      string("50%"),
+      string("55%"),
+      string("60%"),
+      string("65%"),
+      string("70%"),
+      string("75%"),
+      string("80%"),
+      string("85%"),
+      string("90%"),
+      string("95%"),
+      string("100%"),
+      parsec(:arbitrary_value)
+    ])
+    |> tag(:gradient_to_pos)
+
+  gradient_from =
+    string("from-")
+    |> concat(parsec(:color_value))
+    |> tag(:gradient_from)
+
+  gradient_via =
+    string("via-")
+    |> concat(parsec(:color_value))
+    |> tag(:gradient_via)
+
+  gradient_to =
+    string("to-")
+    |> concat(parsec(:color_value))
+    |> tag(:gradient_to)
+
+  # Borders & Outlines
+  rounded =
+    string("rounded")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("sm"),
+        string("md"),
+        string("lg"),
+        string("xl"),
+        string("2xl"),
+        string("3xl"),
+        string("full"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:rounded)
+
+  border_w =
+    string("border")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        string("2"),
+        string("4"),
+        string("8"),
+        string("1"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:border_w)
+
+  border_style =
+    string("border-")
+    |> choice([
+      string("solid"),
+      string("dashed"),
+      string("dotted"),
+      string("double"),
+      string("hidden"),
+      string("none")
+    ])
+    |> eos()
+    |> tag(:border_style)
+
+  divide_x =
+    string("divide-x")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        string("2"),
+        string("4"),
+        string("8"),
+        string("reverse"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:divide_x)
+
+  divide_y =
+    string("divide-y")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        string("2"),
+        string("4"),
+        string("8"),
+        string("reverse"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:divide_y)
+
+  divide_style =
+    string("divide-")
+    |> choice([
+      string("solid"),
+      string("dashed"),
+      string("dotted"),
+      string("double"),
+      string("none")
+    ])
+    |> eos()
+    |> tag(:divide_style)
+
+  divide_color =
+    string("divide-")
+    |> concat(parsec(:color_value))
+    |> tag(:divide_color)
+
+  outline_style =
+    string("outline-")
+    |> choice([
+      string("none"),
+      string("solid"),
+      string("dashed"),
+      string("dotted"),
+      string("double")
+    ])
+    |> eos()
+    |> tag(:outline_style)
+
+  outline_w =
+    string("outline-")
+    |> choice([
+      string("0"),
+      string("1"),
+      string("2"),
+      string("4"),
+      string("8"),
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:outline_w)
+
+  outline_offset =
+    string("outline-offset-")
+    |> choice([
+      string("0"),
+      string("1"),
+      string("2"),
+      string("4"),
+      string("8"),
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:outline_offset)
+
+  outline_color =
+    string("outline-")
+    |> concat(parsec(:color_value))
+    |> tag(:outline_color)
+
+  # Effects
+  shadow =
+    string("shadow")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("sm"),
+        string("md"),
+        string("lg"),
+        string("xl"),
+        string("2xl"),
+        string("inner"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:shadow)
+
+  shadow_color =
+    string("shadow-")
+    |> concat(parsec(:color_value))
+    |> tag(:shadow_color)
+
+  opacity =
+    string("opacity-")
+    |> choice([
+      string("0"),
+      string("5"),
+      string("10"),
+      string("15"),
+      string("20"),
+      string("25"),
+      string("30"),
+      string("35"),
+      string("40"),
+      string("45"),
+      string("50"),
+      string("55"),
+      string("60"),
+      string("65"),
+      string("70"),
+      string("75"),
+      string("80"),
+      string("85"),
+      string("90"),
+      string("95"),
+      string("100"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:opacity)
+
+  bg_blend =
+    string("bg-blend-")
+    |> concat(blend_mode)
+    |> tag(:bg_blend)
+
+  # Filters
+  blur =
+    string("blur")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("sm"),
+        string("md"),
+        string("lg"),
+        string("xl"),
+        string("2xl"),
+        string("3xl"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:blur)
+
+  brightness =
+    string("brightness-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("90"),
+      string("95"),
+      string("100"),
+      string("105"),
+      string("110"),
+      string("125"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:brightness)
+
+  contrast =
+    string("contrast-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("100"),
+      string("125"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:contrast)
+
+  drop_shadow =
+    string("drop-shadow")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("sm"),
+        string("md"),
+        string("lg"),
+        string("xl"),
+        string("2xl"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:drop_shadow)
+
+  hue_rotate =
+    string("hue-rotate-")
+    |> choice([
+      string("0"),
+      string("15"),
+      string("30"),
+      string("60"),
+      string("90"),
+      string("180"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:hue_rotate)
+
+  invert =
+    string("invert")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:invert)
+
+  saturate =
+    string("saturate-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("100"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:saturate)
+
+  sepia =
+    string("sepia")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:sepia)
+
+  backdrop_blur =
+    string("backdrop-blur")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("sm"),
+        string("md"),
+        string("lg"),
+        string("xl"),
+        string("2xl"),
+        string("3xl"),
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:backdrop_blur)
+
+  backdrop_brightness =
+    string("backdrop-brightness-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("90"),
+      string("95"),
+      string("100"),
+      string("105"),
+      string("110"),
+      string("125"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:backdrop_brightness)
+
+  backdrop_contrast =
+    string("backdrop-contrast-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("100"),
+      string("125"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:backdrop_contrast)
+
+  backdrop_grayscale =
+    string("backdrop-grayscale")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:backdrop_grayscale)
+
+  backdrop_hue_rotate =
+    string("backdrop-hue-rotate-")
+    |> choice([
+      string("0"),
+      string("15"),
+      string("30"),
+      string("60"),
+      string("90"),
+      string("180"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:backdrop_hue_rotate)
+
+  backdrop_invert =
+    string("backdrop-invert")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:backdrop_invert)
+
+  backdrop_opacity =
+    string("backdrop-opacity-")
+    |> choice([
+      string("0"),
+      string("5"),
+      string("10"),
+      string("15"),
+      string("20"),
+      string("25"),
+      string("30"),
+      string("35"),
+      string("40"),
+      string("45"),
+      string("50"),
+      string("55"),
+      string("60"),
+      string("65"),
+      string("70"),
+      string("75"),
+      string("80"),
+      string("85"),
+      string("90"),
+      string("95"),
+      string("100"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:backdrop_opacity)
+
+  backdrop_saturate =
+    string("backdrop-saturate-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("100"),
+      string("150"),
+      string("200"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:backdrop_saturate)
+
+  backdrop_sepia =
+    string("backdrop-sepia")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:backdrop_sepia)
+
   # ===== Layout & Positioning Classes =====
 
   # Aspect ratio: aspect-{ratio}
@@ -1546,6 +2223,24 @@ defmodule TailwindMerge.Parser do
 
   class =
     choice([
+      # Visual Effects (bg-, backdrop-, outline-, divide- prefixes need careful ordering)
+      # Backgrounds - more specific before less specific
+      bg_attachment, bg_clip, bg_origin, bg_repeat, bg_blend,
+      gradient_from_pos, gradient_via_pos, gradient_to_pos,
+      gradient_from, gradient_via, gradient_to,
+      bg,  # Background color - before bg-* parsers with arbitrary_value
+      bg_size, bg_image, bg_position,  # These have arbitrary_value, must come after bg
+      # Backdrop filters
+      backdrop_blur, backdrop_brightness, backdrop_contrast, backdrop_grayscale,
+      backdrop_hue_rotate, backdrop_invert, backdrop_opacity, backdrop_saturate, backdrop_sepia,
+      # Filters
+      blur, brightness, contrast, drop_shadow, hue_rotate, invert, saturate, sepia,
+      # Borders & Outlines
+      rounded, border_w, border_style,
+      divide_x, divide_y, divide_style, divide_color,
+      outline_style, outline_offset, outline_w, outline_color,
+      # Shadows & Effects
+      shadow, shadow_color, opacity,
       # Flexbox & Grid (before display which has "flex" and "grid")
       flex_direction, flex_wrap, flex,
       justify_items, justify_self, justify_content,
@@ -1599,7 +2294,7 @@ defmodule TailwindMerge.Parser do
       px, py, ps, pe, pt, pr, pb, pl, p,
       mx, my, ms, me, mt, mr, mb, ml, m,
       # Colors
-      bg, border_color,
+      border_color,
       # Other
       stroke_width, stroke,
       grayscale,
