@@ -285,6 +285,26 @@ defmodule TailwindMerge.Parser do
       arbitrary_variable
     ])
 
+  # ===== Color Classes =====
+
+  # Background color: bg-{color}
+  bg =
+    string("bg-")
+    |> concat(color_value)
+    |> tag(:bg)
+
+  # Text color: text-{color}
+  text_color =
+    string("text-")
+    |> concat(color_value)
+    |> tag(:text_color)
+
+  # Border color: border-{color}
+  border_color =
+    string("border-")
+    |> concat(color_value)
+    |> tag(:border_color)
+
   # ===== Blend Modes =====
 
   blend_mode =
@@ -337,8 +357,310 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:display)
 
+  # ===== Flexbox & Grid Classes =====
+
+  # Flex: flex-{value}
+  flex =
+    string("flex-")
+    |> choice([
+      string("1"),
+      string("auto"),
+      string("initial"),
+      string("none"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:flex)
+
+  # Flex direction: flex-row, flex-col, etc.
+  flex_direction =
+    string("flex-")
+    |> choice([
+      string("row-reverse"),
+      string("col-reverse"),
+      string("row"),
+      string("col")
+    ])
+    |> tag(:flex_direction)
+
+  # Flex wrap: flex-wrap, flex-nowrap, etc.
+  flex_wrap =
+    string("flex-")
+    |> choice([
+      string("wrap-reverse"),
+      string("nowrap"),
+      string("wrap")
+    ])
+    |> tag(:flex_wrap)
+
+  # Justify content: justify-{alignment}
+  justify_content =
+    string("justify-")
+    |> choice([
+      string("normal"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("between"),
+      string("around"),
+      string("evenly"),
+      string("stretch")
+    ])
+    |> tag(:justify_content)
+
+  # Justify items: justify-items-{alignment}
+  justify_items =
+    string("justify-items-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch")
+    ])
+    |> tag(:justify_items)
+
+  # Justify self: justify-self-{alignment}
+  justify_self =
+    string("justify-self-")
+    |> choice([
+      string("auto"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch")
+    ])
+    |> tag(:justify_self)
+
+  # Align content: content-{alignment}
+  align_content =
+    string("content-")
+    |> choice([
+      string("normal"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("between"),
+      string("around"),
+      string("evenly"),
+      string("stretch"),
+      string("baseline")
+    ])
+    |> tag(:align_content)
+
+  # Align items: items-{alignment}
+  align_items =
+    string("items-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("center"),
+      string("baseline"),
+      string("stretch")
+    ])
+    |> tag(:align_items)
+
+  # Align self: self-{alignment}
+  align_self =
+    string("self-")
+    |> choice([
+      string("auto"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch"),
+      string("baseline")
+    ])
+    |> tag(:align_self)
+
+  # Place content: place-content-{alignment}
+  place_content =
+    string("place-content-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("center"),
+      string("between"),
+      string("around"),
+      string("evenly"),
+      string("stretch"),
+      string("baseline")
+    ])
+    |> tag(:place_content)
+
+  # Place items: place-items-{alignment}
+  place_items =
+    string("place-items-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch"),
+      string("baseline")
+    ])
+    |> tag(:place_items)
+
+  # Place self: place-self-{alignment}
+  place_self =
+    string("place-self-")
+    |> choice([
+      string("auto"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch")
+    ])
+    |> tag(:place_self)
+
+  # Gap: gap-{size}
+  gap =
+    string("gap-")
+    |> concat(spacing_scale)
+    |> tag(:gap)
+
+  # Gap X: gap-x-{size}
+  gap_x =
+    string("gap-x-")
+    |> concat(spacing_scale)
+    |> tag(:gap_x)
+
+  # Gap Y: gap-y-{size}
+  gap_y =
+    string("gap-y-")
+    |> concat(spacing_scale)
+    |> tag(:gap_y)
+
+  # Grid columns: grid-cols-{n}
+  grid_cols =
+    string("grid-cols-")
+    |> choice([
+      string("subgrid"),
+      string("none"),
+      integer(min: 1, max: 12),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:grid_cols)
+
+  # Column span: col-span-{n}
+  col_start_end =
+    string("col-span-")
+    |> choice([
+      string("full"),
+      string("auto"),
+      integer(min: 1, max: 12),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:col_start_end)
+
+  # Column start: col-start-{n}
+  col_start =
+    string("col-start-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 13),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:col_start)
+
+  # Column end: col-end-{n}
+  col_end =
+    string("col-end-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 13),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:col_end)
+
+  # Grid rows: grid-rows-{n}
+  grid_rows =
+    string("grid-rows-")
+    |> choice([
+      string("subgrid"),
+      string("none"),
+      integer(min: 1, max: 6),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:grid_rows)
+
+  # Row span: row-span-{n}
+  row_start_end =
+    string("row-span-")
+    |> choice([
+      string("full"),
+      string("auto"),
+      integer(min: 1, max: 6),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:row_start_end)
+
+  # Row start: row-start-{n}
+  row_start =
+    string("row-start-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 7),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:row_start)
+
+  # Row end: row-end-{n}
+  row_end =
+    string("row-end-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 7),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:row_end)
+
+  # Grid flow: grid-flow-{direction}
+  grid_flow =
+    string("grid-flow-")
+    |> choice([
+      string("row-dense"),
+      string("col-dense"),
+      string("dense"),
+      string("row"),
+      string("col")
+    ])
+    |> tag(:grid_flow)
+
+  # Auto columns: auto-cols-{size}
+  auto_cols =
+    string("auto-cols-")
+    |> choice([
+      string("auto"),
+      string("min"),
+      string("max"),
+      string("fr"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:auto_cols)
+
+  # Auto rows: auto-rows-{size}
+  auto_rows =
+    string("auto-rows-")
+    |> choice([
+      string("auto"),
+      string("min"),
+      string("max"),
+      string("fr"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:auto_rows)
+
   # Height: h-{size}
-  height =
+  h =
     string("h-")
     |> concat(sizing_scale)
     |> tag(:height)
@@ -602,16 +924,22 @@ defmodule TailwindMerge.Parser do
 
   class =
     choice([
+      flex_direction, flex_wrap, flex,
+      justify_items, justify_self, justify_content,
+      align_items, align_self, align_content,
+      place_content, place_items, place_self,
+      gap_x, gap_y, gap,
+      grid_cols, grid_rows, grid_flow,
+      col_start_end, col_start, col_end,
+      row_start_end, row_start, row_end,
+      auto_cols, auto_rows,
       display,
-      # Sizing
-      min_w, max_w, min_h, max_h, size, w,
-      height,
-      # Layout
+      min_w, max_w, min_h, max_h, size, w, h,
       overflow_x, overflow_y, overflow,
-      # Spacing
       space_x, space_y,
       px, py, ps, pe, pt, pr, pb, pl, p,
       mx, my, ms, me, mt, mr, mb, ml, m,
+      bg, text_color, border_color,
       stroke_width, stroke,
       grayscale,
       grow,

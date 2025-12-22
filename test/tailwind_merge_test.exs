@@ -50,4 +50,91 @@ defmodule TailwindMergeTest do
     assert tw("p-4 p-[10px]") == "p-[10px]"
     assert tw("m-4 m-[2rem]") == "m-[2rem]"
   end
+
+  test "color classes" do
+    # Background color conflicts
+    assert tw("bg-red-500 bg-blue-500") == "bg-blue-500"
+    assert tw("bg-transparent bg-current") == "bg-current"
+    assert tw("bg-red-500 bg-[#ff0000]") == "bg-[#ff0000]"
+
+    # Text color conflicts
+    assert tw("text-gray-900 text-black") == "text-black"
+    assert tw("text-red-500 text-[#123456]") == "text-[#123456]"
+
+    # Border color conflicts
+    assert tw("border-gray-300 border-blue-500") == "border-blue-500"
+    assert tw("border-red-500 border-transparent") == "border-transparent"
+
+    # Different color types don't conflict
+    assert tw("bg-red-500 text-blue-500 border-green-500") ==
+             "bg-red-500 text-blue-500 border-green-500"
+  end
+
+  test "flexbox classes" do
+    # Flex value conflicts
+    assert tw("flex-1 flex-auto") == "flex-auto"
+    assert tw("flex-initial flex-none") == "flex-none"
+
+    # Flex direction conflicts
+    assert tw("flex-row flex-col") == "flex-col"
+    assert tw("flex-row-reverse flex-col-reverse") == "flex-col-reverse"
+
+    # Flex wrap conflicts
+    assert tw("flex-wrap flex-nowrap") == "flex-nowrap"
+    assert tw("flex-wrap-reverse flex-wrap") == "flex-wrap"
+
+    # Justify content conflicts
+    assert tw("justify-start justify-center") == "justify-center"
+    assert tw("justify-between justify-evenly") == "justify-evenly"
+
+    # Align items conflicts
+    assert tw("items-start items-center") == "items-center"
+    assert tw("items-baseline items-stretch") == "items-stretch"
+
+    # Gap conflicts
+    assert tw("gap-4 gap-8") == "gap-8"
+    assert tw("gap-4 gap-x-8") == "gap-x-8"
+    assert tw("gap-x-4 gap-y-4 gap-8") == "gap-8"
+
+    # Different flex properties don't conflict
+    assert tw("flex-row justify-center items-center") ==
+             "flex-row justify-center items-center"
+  end
+
+  test "grid classes" do
+    # Grid columns conflicts
+    assert tw("grid-cols-3 grid-cols-4") == "grid-cols-4"
+    assert tw("grid-cols-none grid-cols-subgrid") == "grid-cols-subgrid"
+
+    # Grid rows conflicts
+    assert tw("grid-rows-3 grid-rows-4") == "grid-rows-4"
+    assert tw("grid-rows-none grid-rows-subgrid") == "grid-rows-subgrid"
+
+    # Column span conflicts
+    assert tw("col-span-3 col-span-4") == "col-span-4"
+    assert tw("col-span-full col-span-auto") == "col-span-auto"
+
+    # Column start/end conflicts
+    assert tw("col-start-1 col-start-2") == "col-start-2"
+    assert tw("col-end-3 col-end-4") == "col-end-4"
+
+    # Row span conflicts
+    assert tw("row-span-3 row-span-4") == "row-span-4"
+    assert tw("row-span-full row-span-auto") == "row-span-auto"
+
+    # Row start/end conflicts
+    assert tw("row-start-1 row-start-2") == "row-start-2"
+    assert tw("row-end-3 row-end-4") == "row-end-4"
+
+    # Grid flow conflicts
+    assert tw("grid-flow-row grid-flow-col") == "grid-flow-col"
+    assert tw("grid-flow-row-dense grid-flow-col-dense") == "grid-flow-col-dense"
+
+    # Auto cols/rows conflicts
+    assert tw("auto-cols-auto auto-cols-min") == "auto-cols-min"
+    assert tw("auto-rows-max auto-rows-fr") == "auto-rows-fr"
+
+    # Different grid properties don't conflict
+    assert tw("grid-cols-3 grid-rows-4 gap-4") == "grid-cols-3 grid-rows-4 gap-4"
+  end
 end

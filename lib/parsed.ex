@@ -18,7 +18,7 @@ defmodule TailwindMerge.Parsed do
 
     group =
       case Parser.class(normalized_class) do
-        {:ok, [{grouping, _}], _, _, _, _} -> grouping
+        {:ok, [{grouping, _}], "", _, _, _} -> grouping
         _ -> normalized_class
       end
 
