@@ -155,13 +155,9 @@ defmodule TailwindMerge.Parser do
 
   # Arbitrary length: any length value including calc, units, or literal 0
   arbitrary_length_combinator =
-    choice([
-      css_function,
-      length_with_unit,
-      string("0")
-    ])
-
-  defcombinatorp(:arbitrary_length, arbitrary_length_combinator)
+    ascii_char([?[])
+    |> choice([css_function, length_with_unit, string("0")])
+    |> ascii_char([?]])
 
   # ===== Common Values =====
 
@@ -271,12 +267,11 @@ defmodule TailwindMerge.Parser do
       string("lch"),
       string("color-mix")
     ])
-    |> string("(")
-    |> repeat(
-      lookahead_not(string(")"))
-      |> utf8_char([])
-    )
-    |> string(")")
+    |> ascii_char([?(])
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?%], min: 1)
+    |> ascii_char([?)])
+
+  defparsec :color_function, color_function
 
   # Hex color: #RGB, #RRGGBB, #RRGGBBAA
   hex_color =
@@ -297,6 +292,11 @@ defmodule TailwindMerge.Parser do
     ])
 
   defcombinatorp(:color_value, color_value_combinator)
+
+  arbitrary_color_value =
+    ascii_char([?[])
+    |> parsec(:color_value)
+    |> ascii_char([?]])
 
   # ===== Color Classes =====
 
@@ -2520,14 +2520,13 @@ defmodule TailwindMerge.Parser do
     |> choice([
       integer_value,
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value)
     ])
     |> tag(:stroke_width)
 
   # Stroke color: stroke-{color}
   stroke =
     string("stroke-")
-    |> choice([none, parsec(:color_value)])
+    |> choice([none, arbitrary_color_value])
     |> tag(:stroke)
 
   # Grayscale: grayscale or grayscale-{value}
@@ -2771,6 +2770,22 @@ defmodule TailwindMerge.Parser do
 
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
+  regular_modifier =
+    ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
+    |> ignore(ascii_char([?:]))
+    |> unwrap_and_tag(:regular_modifier)
+
+  arbitrary_modifier =
+    ignore(ascii_char([?[]))
+    |> ascii_string([?!..?Z, ?/, ?^..?z], min: 1)
+    |> ignore(ascii_char([?]]))
+    |> ignore(ascii_char([?:]))
+    |> unwrap_and_tag(:arbitrary_modifier)
+
+  modifiers =
+    choice([regular_modifier, arbitrary_modifier])
+    |> repeat()
+
   class =
     choice([
       # Visual Effects (bg-, backdrop-, outline-, divide- prefixes need careful ordering)
@@ -3010,8 +3025,8 @@ defmodule TailwindMerge.Parser do
       border_color,
       # Other (SVG and effects)
       fill,
-      stroke_width,
       stroke,
+      stroke_width,
       grayscale,
       grow,
       mix_blend,
@@ -3020,4 +3035,6 @@ defmodule TailwindMerge.Parser do
     ])
 
   defparsec(:class, class)
+  defparsec(:modifiers, modifiers)
+  defparsec(:arbitrary_color_value, arbitrary_color_value)
 end

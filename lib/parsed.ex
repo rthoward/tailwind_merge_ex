@@ -4,33 +4,43 @@ defmodule TailwindMerge.Parsed do
   defstruct [:class, :group, :modifiers, :important?]
 
   def new(class) do
-    normalized_class = String.replace(class, ~r/(^!|!$)/, "")
-    important? = normalized_class != class
-
-    {normalized_class, modifiers} =
-      normalized_class
-      |> String.split(":")
-      |> Enum.reverse()
-      |> case do
-        [class] -> {class, []}
-        [class | modifiers] -> {class, modifiers}
+    {modifiers, base_classname} =
+      case Parser.modifiers(class) |> dbg() do
+        {:ok, modifiers, base_classname, _, _, _} -> {modifiers, base_classname}
+        error -> raise "Failed to parse #{class}: #{inspect(error)}"
       end
+
+    normalized_classname = String.replace(base_classname, ~r/(^!|!$)/, "")
+    important? = normalized_classname != base_classname
 
     group =
-      case Parser.class(normalized_class) do
+      case Parser.class(normalized_classname) do
         {:ok, [{grouping, _}], "", _, _, _} -> grouping
-        _ -> normalized_class
+        _ -> normalized_classname
       end
-
-    modifiers = Enum.join(modifiers, ":")
 
     %__MODULE__{
       class: class,
       group: group,
-      modifiers: modifiers,
+      modifiers: sort_modifiers(modifiers),
       important?: important?
     }
+    |> dbg()
   end
 
-  def key(parsed), do: {parsed.modifiers, parsed.important?, parsed.group}
+  defp sort_modifiers(modifiers) do
+    modifiers
+    |> Enum.reduce(
+      [[]],
+      fn
+        {:regular_modifier, modifier}, [current_segment | rest] ->
+          [[modifier] ++ current_segment | rest]
+
+        {:arbitrary_modifier, modifier}, [current_segment | rest] ->
+          [[modifier] | Enum.sort(current_segment) ++ rest]
+      end
+    )
+    |> Enum.flat_map(&Enum.sort/1)
+    |> Enum.reverse()
+  end
 end
