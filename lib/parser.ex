@@ -115,10 +115,11 @@ defmodule TailwindMerge.Parser do
     |> string(")")
 
   # ===== Arbitrary Values =====
+  # These are defined as defcombinatorp for performance (heavily reused)
 
   # Arbitrary value: [value] or [label:value]
   # Examples: [10px], [color:blue], [length:2rem]
-  arbitrary_value =
+  arbitrary_value_combinator =
     ascii_char([?[])
     |> optional(
       # Optional label: word followed by colon
@@ -131,9 +132,11 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?]])
 
+  defcombinatorp(:arbitrary_value, arbitrary_value_combinator)
+
   # Arbitrary variable: (--var) or (label:--var)
   # Examples: (--my-color), (color:--theme-primary)
-  arbitrary_variable =
+  arbitrary_variable_combinator =
     ascii_char([?(])
     |> optional(
       # Optional label: word followed by colon
@@ -146,15 +149,19 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?)])
 
+  defcombinatorp(:arbitrary_variable, arbitrary_variable_combinator)
+
   # ===== Length Parsers =====
 
   # Arbitrary length: any length value including calc, units, or literal 0
-  arbitrary_length =
+  arbitrary_length_combinator =
     choice([
       css_function,
       length_with_unit,
       string("0")
     ])
+
+  defcombinatorp(:arbitrary_length, arbitrary_length_combinator)
 
   # ===== Common Values =====
 
@@ -166,7 +173,7 @@ defmodule TailwindMerge.Parser do
   # Tailwind spacing scale: 0, 0.5, 1, 1.5, 2, 2.5, ..., 96, px, auto, full, arbitrary
   # Reference: https://tailwindcss.com/docs/customizing-spacing
 
-  spacing_scale =
+  spacing_scale_combinator =
     choice([
       auto,
       full,
@@ -180,15 +187,17 @@ defmodule TailwindMerge.Parser do
       # Zero as a special case
       string("0"),
       fraction,
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
+
+  defcombinatorp(:spacing_scale, spacing_scale_combinator)
 
   # ===== Sizing Values =====
   # Combines spacing scale with additional sizing keywords
 
-  sizing_scale =
+  sizing_scale_combinator =
     choice([
       # Viewport units (order matters - longer strings first)
       string("vmin"),
@@ -221,10 +230,12 @@ defmodule TailwindMerge.Parser do
       # Zero as a special case
       string("0"),
       fraction,
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
+
+  defcombinatorp(:sizing_scale, sizing_scale_combinator)
 
   # ===== Color Values =====
   # Supports: named colors, hex, rgb, hsl, arbitrary values
@@ -241,8 +252,8 @@ defmodule TailwindMerge.Parser do
       |> choice([
         string("0"),
         integer(min: 1, max: 100),
-        arbitrary_value,
-        arbitrary_variable
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
       ])
     )
 
@@ -273,7 +284,7 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 3, max: 8)
 
   # Any color value
-  color_value =
+  color_value_combinator =
     choice([
       string("transparent"),
       string("current"),
@@ -281,28 +292,30 @@ defmodule TailwindMerge.Parser do
       color_function,
       hex_color,
       named_color,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
+
+  defcombinatorp(:color_value, color_value_combinator)
 
   # ===== Color Classes =====
 
   # Background color: bg-{color}
   bg =
     string("bg-")
-    |> concat(color_value)
+    |> concat(parsec(:color_value))
     |> tag(:bg)
 
   # Text color: text-{color}
   text_color =
     string("text-")
-    |> concat(color_value)
+    |> concat(parsec(:color_value))
     |> tag(:text_color)
 
   # Border color: border-{color}
   border_color =
     string("border-")
-    |> concat(color_value)
+    |> concat(parsec(:color_value))
     |> tag(:border_color)
 
   # ===== Blend Modes =====
@@ -340,8 +353,8 @@ defmodule TailwindMerge.Parser do
       string("square"),
       string("video"),
       fraction,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:aspect)
 
@@ -357,9 +370,9 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 12),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:columns)
 
@@ -490,8 +503,8 @@ defmodule TailwindMerge.Parser do
       string("right-top"),
       string("right"),
       string("top"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:object_position)
 
@@ -510,55 +523,55 @@ defmodule TailwindMerge.Parser do
   # Inset: inset-{size}
   inset =
     string("inset-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:inset)
 
   # Inset X: inset-x-{size}
   inset_x =
     string("inset-x-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:inset_x)
 
   # Inset Y: inset-y-{size}
   inset_y =
     string("inset-y-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:inset_y)
 
   # Start: start-{size}
   start =
     string("start-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:start)
 
   # End: end-{size}
   end_position =
     string("end-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:end)
 
   # Top: top-{size}
   top =
     string("top-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:top)
 
   # Right: right-{size}
   right =
     string("right-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:right)
 
   # Bottom: bottom-{size}
   bottom =
     string("bottom-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:bottom)
 
   # Left: left-{size}
   left =
     string("left-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:left)
 
   # Visibility: visible, invisible, collapse
@@ -578,8 +591,8 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       integer(min: 1, max: 50),
       string("0"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:z)
 
@@ -602,9 +615,9 @@ defmodule TailwindMerge.Parser do
       string("7xl"),
       string("8xl"),
       string("9xl"),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:font_size)
 
@@ -639,8 +652,8 @@ defmodule TailwindMerge.Parser do
       string("bold"),
       string("extrabold"),
       string("black"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:font_weight)
 
@@ -651,8 +664,8 @@ defmodule TailwindMerge.Parser do
       string("sans"),
       string("serif"),
       string("mono"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:font_family)
 
@@ -711,9 +724,9 @@ defmodule TailwindMerge.Parser do
       string("wide"),
       string("wider"),
       string("widest"),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:tracking)
 
@@ -723,8 +736,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("none"),
       integer(min: 1, max: 6),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:line_clamp)
 
@@ -739,9 +752,9 @@ defmodule TailwindMerge.Parser do
       string("relaxed"),
       string("loose"),
       integer(min: 1, max: 10),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:leading)
 
@@ -750,8 +763,8 @@ defmodule TailwindMerge.Parser do
     string("list-image-")
     |> choice([
       string("none"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:list_image)
 
@@ -810,16 +823,16 @@ defmodule TailwindMerge.Parser do
       string("2"),
       string("4"),
       string("8"),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:text_decoration_thickness)
 
   # Text decoration color: decoration-{color}
   text_decoration_color =
     string("decoration-")
-    |> concat(color_value)
+    |> concat(parsec(:color_value))
     |> tag(:text_decoration_color)
 
   # Underline offset: underline-offset-{size}
@@ -832,9 +845,9 @@ defmodule TailwindMerge.Parser do
       string("2"),
       string("4"),
       string("8"),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:underline_offset)
 
@@ -873,7 +886,7 @@ defmodule TailwindMerge.Parser do
   # Text indent: indent-{size}
   indent =
     string("indent-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:indent)
 
   # Vertical align: align-{position}
@@ -888,9 +901,9 @@ defmodule TailwindMerge.Parser do
       string("text-bottom"),
       string("sub"),
       string("super"),
-      arbitrary_length,
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:vertical_align)
 
@@ -933,8 +946,8 @@ defmodule TailwindMerge.Parser do
     string("content-")
     |> choice([
       string("none"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:content)
 
@@ -976,8 +989,8 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       string("initial"),
       string("none"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:flex)
 
@@ -1123,19 +1136,19 @@ defmodule TailwindMerge.Parser do
   # Gap: gap-{size}
   gap =
     string("gap-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:gap)
 
   # Gap X: gap-x-{size}
   gap_x =
     string("gap-x-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:gap_x)
 
   # Gap Y: gap-y-{size}
   gap_y =
     string("gap-y-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:gap_y)
 
   # Grid columns: grid-cols-{n}
@@ -1145,8 +1158,8 @@ defmodule TailwindMerge.Parser do
       string("subgrid"),
       string("none"),
       integer(min: 1, max: 12),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:grid_cols)
 
@@ -1157,8 +1170,8 @@ defmodule TailwindMerge.Parser do
       string("full"),
       string("auto"),
       integer(min: 1, max: 12),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:col_start_end)
 
@@ -1168,8 +1181,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 13),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:col_start)
 
@@ -1179,8 +1192,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 13),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:col_end)
 
@@ -1191,8 +1204,8 @@ defmodule TailwindMerge.Parser do
       string("subgrid"),
       string("none"),
       integer(min: 1, max: 6),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:grid_rows)
 
@@ -1203,8 +1216,8 @@ defmodule TailwindMerge.Parser do
       string("full"),
       string("auto"),
       integer(min: 1, max: 6),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:row_start_end)
 
@@ -1214,8 +1227,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 7),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:row_start)
 
@@ -1225,8 +1238,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 7),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:row_end)
 
@@ -1250,8 +1263,8 @@ defmodule TailwindMerge.Parser do
       string("min"),
       string("max"),
       string("fr"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:auto_cols)
 
@@ -1263,15 +1276,15 @@ defmodule TailwindMerge.Parser do
       string("min"),
       string("max"),
       string("fr"),
-      arbitrary_value,
-      arbitrary_variable
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:auto_rows)
 
   # Height: h-{size}
   h =
     string("h-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:height)
 
   # Stroke width: stroke-{width}
@@ -1279,15 +1292,15 @@ defmodule TailwindMerge.Parser do
     string("stroke-")
     |> choice([
       integer_value,
-      arbitrary_length,
-      arbitrary_value
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
     ])
     |> tag(:stroke_width)
 
   # Stroke color: stroke-{color}
   stroke =
     string("stroke-")
-    |> choice([none, color_value])
+    |> choice([none, parsec(:color_value)])
     |> tag(:stroke)
 
   # Grayscale: grayscale or grayscale-{value}
@@ -1298,9 +1311,9 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         integer_value,
-        arbitrary_length,
-        arbitrary_value,
-        arbitrary_variable
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
       ])
     ])
     |> tag(:grayscale)
@@ -1313,9 +1326,9 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         integer_value,
-        arbitrary_length,
-        arbitrary_value,
-        arbitrary_variable
+        parsec(:arbitrary_length),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
       ])
     ])
     |> tag(:grow)
@@ -1373,121 +1386,121 @@ defmodule TailwindMerge.Parser do
   # Padding: p-{size}
   p =
     string("p-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:p)
 
   # Padding X: px-{size}
   px =
     string("px-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:px)
 
   # Padding Y: py-{size}
   py =
     string("py-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:py)
 
   # Padding Start: ps-{size}
   ps =
     string("ps-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:ps)
 
   # Padding End: pe-{size}
   pe =
     string("pe-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:pe)
 
   # Padding Top: pt-{size}
   pt =
     string("pt-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:pt)
 
   # Padding Right: pr-{size}
   pr =
     string("pr-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:pr)
 
   # Padding Bottom: pb-{size}
   pb =
     string("pb-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:pb)
 
   # Padding Left: pl-{size}
   pl =
     string("pl-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:pl)
 
   # Margin: m-{size}
   m =
     string("m-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:m)
 
   # Margin X: mx-{size}
   mx =
     string("mx-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:mx)
 
   # Margin Y: my-{size}
   my =
     string("my-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:my)
 
   # Margin Start: ms-{size}
   ms =
     string("ms-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:ms)
 
   # Margin End: me-{size}
   me =
     string("me-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:me)
 
   # Margin Top: mt-{size}
   mt =
     string("mt-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:mt)
 
   # Margin Right: mr-{size}
   mr =
     string("mr-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:mr)
 
   # Margin Bottom: mb-{size}
   mb =
     string("mb-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:mb)
 
   # Margin Left: ml-{size}
   ml =
     string("ml-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:ml)
 
   # Space Between X: space-x-{size}
   space_x =
     string("space-x-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:space_x)
 
   # Space Between Y: space-y-{size}
   space_y =
     string("space-y-")
-    |> concat(spacing_scale)
+    |> concat(parsec(:spacing_scale))
     |> tag(:space_y)
 
   # ===== Sizing Classes =====
@@ -1496,37 +1509,37 @@ defmodule TailwindMerge.Parser do
   # Width: w-{size}
   w =
     string("w-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:w)
 
   # Min Width: min-w-{size}
   min_w =
     string("min-w-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:min_w)
 
   # Max Width: max-w-{size}
   max_w =
     string("max-w-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:max_w)
 
   # Min Height: min-h-{size}
   min_h =
     string("min-h-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:min_h)
 
   # Max Height: max-h-{size}
   max_h =
     string("max-h-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:max_h)
 
   # Size: size-{value} (sets both width and height)
   size =
     string("size-")
-    |> concat(sizing_scale)
+    |> concat(parsec(:sizing_scale))
     |> tag(:size)
 
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
