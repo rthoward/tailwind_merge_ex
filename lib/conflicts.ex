@@ -148,6 +148,9 @@ defmodule TailwindMerge.Conflicts do
     border_spacing_y: [:border_spacing],
 
     # Transforms
+    scale: [:scale_x, :scale_y],
+    scale_x: [:scale],
+    scale_y: [:scale],
     translate: [:translate_x, :translate_y, :translate_none],
     translate_x: [:translate, :translate_none],
     translate_y: [:translate, :translate_none],

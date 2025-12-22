@@ -343,6 +343,556 @@ defmodule TailwindMerge.Parser do
   # ===== Class Group Parsers =====
   # These parsers recognize specific Tailwind CSS class groups
 
+  # ===== Advanced Features Classes =====
+
+  # Transforms
+  rotate =
+    string("rotate-")
+    |> choice([
+      string("0"),
+      string("1"),
+      string("2"),
+      string("3"),
+      string("6"),
+      string("12"),
+      string("45"),
+      string("90"),
+      string("180"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:rotate)
+
+  scale =
+    string("scale")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("0"),
+        string("50"),
+        string("75"),
+        string("90"),
+        string("95"),
+        string("100"),
+        string("105"),
+        string("110"),
+        string("125"),
+        string("150"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:scale)
+
+  scale_x =
+    string("scale-x-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("90"),
+      string("95"),
+      string("100"),
+      string("105"),
+      string("110"),
+      string("125"),
+      string("150"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:scale_x)
+
+  scale_y =
+    string("scale-y-")
+    |> choice([
+      string("0"),
+      string("50"),
+      string("75"),
+      string("90"),
+      string("95"),
+      string("100"),
+      string("105"),
+      string("110"),
+      string("125"),
+      string("150"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:scale_y)
+
+  skew_x =
+    string("skew-x-")
+    |> choice([
+      string("0"),
+      string("1"),
+      string("2"),
+      string("3"),
+      string("6"),
+      string("12"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:skew_x)
+
+  skew_y =
+    string("skew-y-")
+    |> choice([
+      string("0"),
+      string("1"),
+      string("2"),
+      string("3"),
+      string("6"),
+      string("12"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:skew_y)
+
+  translate_x =
+    string("translate-x-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:translate_x)
+
+  translate_y =
+    string("translate-y-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:translate_y)
+
+  translate_none =
+    string("translate-none")
+    |> eos()
+    |> tag(:translate_none)
+
+  transform_origin =
+    string("origin-")
+    |> choice([
+      string("center"),
+      string("top-right"),
+      string("top-left"),
+      string("top"),
+      string("bottom-right"),
+      string("bottom-left"),
+      string("bottom"),
+      string("right"),
+      string("left"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:transform_origin)
+
+  perspective =
+    string("perspective-")
+    |> choice([
+      string("none"),
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:perspective)
+
+  perspective_origin =
+    string("perspective-origin-")
+    |> choice([
+      string("center"),
+      string("top-right"),
+      string("top-left"),
+      string("top"),
+      string("bottom-right"),
+      string("bottom-left"),
+      string("bottom"),
+      string("right"),
+      string("left"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:perspective_origin)
+
+  # Transitions & Animations
+  transition =
+    string("transition")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("all"),
+        string("colors"),
+        string("opacity"),
+        string("shadow"),
+        string("transform"),
+        parsec(:arbitrary_value),
+        parsec(:arbitrary_variable)
+      ])
+    ])
+    |> tag(:transition)
+
+  duration =
+    string("duration-")
+    |> choice([
+      string("0"),
+      string("75"),
+      string("100"),
+      string("150"),
+      string("200"),
+      string("300"),
+      string("500"),
+      string("700"),
+      string("1000"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:duration)
+
+  ease =
+    string("ease-")
+    |> choice([
+      string("linear"),
+      string("in-out"),
+      string("in"),
+      string("out"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:ease)
+
+  delay =
+    string("delay-")
+    |> choice([
+      string("0"),
+      string("75"),
+      string("100"),
+      string("150"),
+      string("200"),
+      string("300"),
+      string("500"),
+      string("700"),
+      string("1000"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:delay)
+
+  animate =
+    string("animate-")
+    |> choice([
+      string("none"),
+      string("spin"),
+      string("ping"),
+      string("pulse"),
+      string("bounce"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:animate)
+
+  # Tables
+  border_collapse =
+    string("border-")
+    |> choice([
+      string("collapse"),
+      string("separate")
+    ])
+    |> eos()
+    |> tag(:border_collapse)
+
+  border_spacing =
+    string("border-spacing-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:border_spacing)
+
+  border_spacing_x =
+    string("border-spacing-x-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:border_spacing_x)
+
+  border_spacing_y =
+    string("border-spacing-y-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:border_spacing_y)
+
+  table_layout =
+    string("table-")
+    |> choice([
+      string("auto"),
+      string("fixed")
+    ])
+    |> eos()
+    |> tag(:table_layout)
+
+  caption =
+    string("caption-")
+    |> choice([
+      string("top"),
+      string("bottom")
+    ])
+    |> eos()
+    |> tag(:caption)
+
+  # Interactivity
+  cursor =
+    string("cursor-")
+    |> choice([
+      string("auto"),
+      string("default"),
+      string("pointer"),
+      string("wait"),
+      string("text"),
+      string("move"),
+      string("help"),
+      string("not-allowed"),
+      string("none"),
+      string("context-menu"),
+      string("progress"),
+      string("cell"),
+      string("crosshair"),
+      string("vertical-text"),
+      string("alias"),
+      string("copy"),
+      string("no-drop"),
+      string("grab"),
+      string("grabbing"),
+      string("all-scroll"),
+      string("col-resize"),
+      string("row-resize"),
+      string("n-resize"),
+      string("e-resize"),
+      string("s-resize"),
+      string("w-resize"),
+      string("ne-resize"),
+      string("nw-resize"),
+      string("se-resize"),
+      string("sw-resize"),
+      string("ew-resize"),
+      string("ns-resize"),
+      string("nesw-resize"),
+      string("nwse-resize"),
+      string("zoom-in"),
+      string("zoom-out"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:cursor)
+
+  pointer_events =
+    string("pointer-events-")
+    |> choice([
+      string("none"),
+      string("auto")
+    ])
+    |> eos()
+    |> tag(:pointer_events)
+
+  resize =
+    string("resize")
+    |> choice([
+      eos(),
+      string("-")
+      |> choice([
+        string("none"),
+        string("y"),
+        string("x")
+      ])
+    ])
+    |> tag(:resize)
+
+  scroll_behavior =
+    string("scroll-")
+    |> choice([
+      string("auto"),
+      string("smooth")
+    ])
+    |> eos()
+    |> tag(:scroll_behavior)
+
+  scroll_m =
+    string("scroll-m-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_m)
+
+  scroll_mx =
+    string("scroll-mx-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_mx)
+
+  scroll_my =
+    string("scroll-my-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_my)
+
+  scroll_ms =
+    string("scroll-ms-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_ms)
+
+  scroll_me =
+    string("scroll-me-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_me)
+
+  scroll_mt =
+    string("scroll-mt-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_mt)
+
+  scroll_mr =
+    string("scroll-mr-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_mr)
+
+  scroll_mb =
+    string("scroll-mb-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_mb)
+
+  scroll_ml =
+    string("scroll-ml-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_ml)
+
+  scroll_p =
+    string("scroll-p-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_p)
+
+  scroll_px =
+    string("scroll-px-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_px)
+
+  scroll_py =
+    string("scroll-py-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_py)
+
+  scroll_ps =
+    string("scroll-ps-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_ps)
+
+  scroll_pe =
+    string("scroll-pe-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_pe)
+
+  scroll_pt =
+    string("scroll-pt-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_pt)
+
+  scroll_pr =
+    string("scroll-pr-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_pr)
+
+  scroll_pb =
+    string("scroll-pb-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_pb)
+
+  scroll_pl =
+    string("scroll-pl-")
+    |> concat(parsec(:spacing_scale))
+    |> tag(:scroll_pl)
+
+  snap_align =
+    string("snap-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("center"),
+      string("align-none")
+    ])
+    |> eos()
+    |> tag(:snap_align)
+
+  snap_stop =
+    string("snap-")
+    |> choice([
+      string("normal"),
+      string("always")
+    ])
+    |> eos()
+    |> tag(:snap_stop)
+
+  snap_type =
+    string("snap-")
+    |> choice([
+      string("none"),
+      string("x"),
+      string("y"),
+      string("both")
+    ])
+    |> eos()
+    |> tag(:snap_type)
+
+  touch =
+    string("touch-")
+    |> choice([
+      string("auto"),
+      string("none"),
+      string("manipulation")
+    ])
+    |> eos()
+    |> tag(:touch)
+
+  touch_x =
+    string("touch-pan-")
+    |> choice([
+      string("x"),
+      string("left"),
+      string("right")
+    ])
+    |> eos()
+    |> tag(:touch_x)
+
+  touch_y =
+    string("touch-pan-")
+    |> choice([
+      string("y"),
+      string("up"),
+      string("down")
+    ])
+    |> eos()
+    |> tag(:touch_y)
+
+  touch_pz =
+    string("touch-pinch-zoom")
+    |> eos()
+    |> tag(:touch_pz)
+
+  user_select =
+    string("select-")
+    |> choice([
+      string("none"),
+      string("text"),
+      string("all"),
+      string("auto")
+    ])
+    |> eos()
+    |> tag(:user_select)
+
+  will_change =
+    string("will-change-")
+    |> choice([
+      string("auto"),
+      string("scroll"),
+      string("contents"),
+      string("transform"),
+      parsec(:arbitrary_value),
+      parsec(:arbitrary_variable)
+    ])
+    |> tag(:will_change)
+
+  # SVG
+  fill =
+    string("fill-")
+    |> choice([
+      none,
+      parsec(:color_value)
+    ])
+    |> tag(:fill)
+
   # ===== Visual Effects Classes =====
 
   # Backgrounds
@@ -2235,12 +2785,19 @@ defmodule TailwindMerge.Parser do
       backdrop_hue_rotate, backdrop_invert, backdrop_opacity, backdrop_saturate, backdrop_sepia,
       # Filters
       blur, brightness, contrast, drop_shadow, hue_rotate, invert, saturate, sepia,
-      # Borders & Outlines
+      # Borders & Outlines (table borders before regular borders)
+      border_collapse, border_spacing_x, border_spacing_y, border_spacing,
+      table_layout, caption,
       rounded, border_w, border_style,
       divide_x, divide_y, divide_style, divide_color,
       outline_style, outline_offset, outline_w, outline_color,
       # Shadows & Effects
       shadow, shadow_color, opacity,
+      # Transforms & Transitions
+      scale_x, scale_y, scale, rotate, skew_x, skew_y,
+      translate_x, translate_y, translate_none,
+      transform_origin, perspective, perspective_origin,
+      transition, duration, ease, delay, animate,
       # Flexbox & Grid (before display which has "flex" and "grid")
       flex_direction, flex_wrap, flex,
       justify_items, justify_self, justify_content,
@@ -2283,6 +2840,13 @@ defmodule TailwindMerge.Parser do
       whitespace, word_break,
       hyphens,
       content,
+      # Interactivity
+      scroll_mx, scroll_my, scroll_ms, scroll_me, scroll_mt, scroll_mr, scroll_mb, scroll_ml, scroll_m,
+      scroll_px, scroll_py, scroll_ps, scroll_pe, scroll_pt, scroll_pr, scroll_pb, scroll_pl, scroll_p,
+      scroll_behavior,
+      snap_align, snap_stop, snap_type,
+      touch_x, touch_y, touch_pz, touch,
+      cursor, pointer_events, resize, user_select, will_change,
       # Display
       display,
       # Sizing
@@ -2295,8 +2859,8 @@ defmodule TailwindMerge.Parser do
       mx, my, ms, me, mt, mr, mb, ml, m,
       # Colors
       border_color,
-      # Other
-      stroke_width, stroke,
+      # Other (SVG and effects)
+      fill, stroke_width, stroke,
       grayscale,
       grow,
       mix_blend,
