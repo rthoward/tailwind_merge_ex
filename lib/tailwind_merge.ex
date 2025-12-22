@@ -22,16 +22,29 @@ defmodule TailwindMerge do
     classes
     |> Enum.map(&Parsed.new/1)
     |> Enum.reverse()
-    |> Enum.reduce({MapSet.new(), []}, fn parsed, {seen, acc} ->
-      key = Parsed.key(parsed)
-      conflicting_groups = Conflicts.groups(parsed.group)
-      conflicting_keys = Enum.map(conflicting_groups, &Parsed.key(%Parsed{parsed | group: &1}))
-      keep? = !Enum.any?(conflicting_keys, &MapSet.member?(seen, &1))
-      seen = MapSet.put(seen, key)
+    |> Enum.reduce({%{}, []}, fn parsed, {seen_groups, acc} ->
 
-      if keep?,
-        do: {seen, [parsed.class | acc]},
-        else: {seen, acc}
+      conflicting_groups = Conflicts.groups(parsed.group)
+
+      dbg(parsed)
+      dbg(seen_groups)
+      dbg(conflicting_groups)
+
+      group_match = get_in(seen_groups, [parsed.group, parsed.modifiers])
+      conflict? = !is_nil(group_match) && (!parsed.important? || group_match)
+
+      seen_groups =
+      Enum.reduce(conflicting_groups, seen_groups, fn group, seen_groups ->
+        Map.put(seen_groups, group, %{parsed.modifiers => parsed.important?})
+        end)
+
+      dbg(seen_groups)
+
+      IO.puts("\n\n\n")
+
+      if !conflict?,
+        do: {seen_groups, [parsed.class | acc]},
+        else: {seen_groups, acc}
     end)
     |> elem(1)
   end
@@ -41,7 +54,7 @@ defmodule TailwindMerge do
   def flatten({_class, nil}), do: []
   def flatten({_class, false}), do: []
   def flatten({class, true}), do: ["#{class}"]
-  def flatten(s) when is_binary(s), do: s |> String.split(" ") |> Enum.map(&String.trim/1)
+  def flatten(s) when is_binary(s), do: s |> String.split(~r/\s+/, trim: true)
   def flatten(lst) when is_list(lst), do: Enum.flat_map(lst, &flatten/1)
 
   defp join(classes) do
