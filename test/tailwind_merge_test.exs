@@ -137,4 +137,44 @@ defmodule TailwindMergeTest do
     # Different grid properties don't conflict
     assert tw("grid-cols-3 grid-rows-4 gap-4") == "grid-cols-3 grid-rows-4 gap-4"
   end
+
+  test "layout & positioning classes" do
+    # Position conflicts
+    assert tw("static absolute") == "absolute"
+    assert tw("fixed relative") == "relative"
+
+    # Inset conflicts (cross-group)
+    assert tw("inset-4 inset-x-8") == "inset-x-8"
+    assert tw("inset-4 top-8") == "top-8"
+    assert tw("top-4 inset-y-8") == "inset-y-8"
+
+    # Individual positioning conflicts
+    assert tw("top-4 top-8") == "top-8"
+    assert tw("right-4 right-8") == "right-8"
+    assert tw("bottom-4 bottom-8") == "bottom-8"
+    assert tw("left-4 left-8") == "left-8"
+
+    # Z-index conflicts
+    assert tw("z-10 z-20") == "z-20"
+    assert tw("z-auto z-50") == "z-50"
+
+    # Float conflicts
+    assert tw("float-left float-right") == "float-right"
+    assert tw("float-none float-start") == "float-start"
+
+    # Visibility conflicts
+    assert tw("visible invisible") == "invisible"
+    assert tw("invisible collapse") == "collapse"
+
+    # Aspect ratio conflicts
+    assert tw("aspect-auto aspect-square") == "aspect-square"
+    assert tw("aspect-video aspect-[4/3]") == "aspect-[4/3]"
+
+    # Object fit/position conflicts
+    assert tw("object-contain object-cover") == "object-cover"
+    assert tw("object-center object-top") == "object-top"
+
+    # Different positioning properties don't conflict
+    assert tw("absolute top-4 left-4 z-10") == "absolute top-4 left-4 z-10"
+  end
 end

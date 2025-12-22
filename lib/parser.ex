@@ -330,6 +330,614 @@ defmodule TailwindMerge.Parser do
   # ===== Class Group Parsers =====
   # These parsers recognize specific Tailwind CSS class groups
 
+  # ===== Layout & Positioning Classes =====
+
+  # Aspect ratio: aspect-{ratio}
+  aspect =
+    string("aspect-")
+    |> choice([
+      string("auto"),
+      string("square"),
+      string("video"),
+      fraction,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:aspect)
+
+  # Container: container
+  container =
+    string("container")
+    |> eos()
+    |> tag(:container)
+
+  # Columns: columns-{n}
+  columns =
+    string("columns-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 12),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:columns)
+
+  # Break after: break-after-{value}
+  break_after =
+    string("break-after-")
+    |> choice([
+      string("auto"),
+      string("avoid"),
+      string("all"),
+      string("avoid-page"),
+      string("page"),
+      string("left"),
+      string("right"),
+      string("column")
+    ])
+    |> tag(:break_after)
+
+  # Break before: break-before-{value}
+  break_before =
+    string("break-before-")
+    |> choice([
+      string("auto"),
+      string("avoid"),
+      string("all"),
+      string("avoid-page"),
+      string("page"),
+      string("left"),
+      string("right"),
+      string("column")
+    ])
+    |> tag(:break_before)
+
+  # Break inside: break-inside-{value}
+  break_inside =
+    string("break-inside-")
+    |> choice([
+      string("auto"),
+      string("avoid"),
+      string("avoid-page"),
+      string("avoid-column")
+    ])
+    |> tag(:break_inside)
+
+  # Box decoration: box-decoration-{slice/clone}
+  box_decoration =
+    string("box-decoration-")
+    |> choice([
+      string("slice"),
+      string("clone")
+    ])
+    |> tag(:box_decoration)
+
+  # Box sizing: box-{border/content}
+  box =
+    string("box-")
+    |> choice([
+      string("border"),
+      string("content")
+    ])
+    |> tag(:box)
+
+  # Screen reader: sr-only, not-sr-only
+  sr =
+    choice([
+      string("sr-only"),
+      string("not-sr-only")
+    ])
+    |> eos()
+    |> tag(:sr)
+
+  # Float: float-{direction}
+  float =
+    string("float-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("right"),
+      string("left"),
+      string("none")
+    ])
+    |> tag(:float)
+
+  # Clear: clear-{direction}
+  clear =
+    string("clear-")
+    |> choice([
+      string("start"),
+      string("end"),
+      string("left"),
+      string("right"),
+      string("both"),
+      string("none")
+    ])
+    |> tag(:clear)
+
+  # Isolation: isolate, isolation-auto
+  isolation =
+    choice([
+      string("isolation-auto"),
+      string("isolate")
+    ])
+    |> eos()
+    |> tag(:isolation)
+
+  # Object fit: object-{fit}
+  object_fit =
+    string("object-")
+    |> choice([
+      string("contain"),
+      string("cover"),
+      string("fill"),
+      string("none"),
+      string("scale-down")
+    ])
+    |> tag(:object_fit)
+
+  # Object position: object-{position}
+  object_position =
+    string("object-")
+    |> choice([
+      string("bottom"),
+      string("center"),
+      string("left-bottom"),
+      string("left-top"),
+      string("left"),
+      string("right-bottom"),
+      string("right-top"),
+      string("right"),
+      string("top"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:object_position)
+
+  # Position: static, fixed, absolute, relative, sticky
+  position =
+    choice([
+      string("static"),
+      string("fixed"),
+      string("absolute"),
+      string("relative"),
+      string("sticky")
+    ])
+    |> eos()
+    |> tag(:position)
+
+  # Inset: inset-{size}
+  inset =
+    string("inset-")
+    |> concat(spacing_scale)
+    |> tag(:inset)
+
+  # Inset X: inset-x-{size}
+  inset_x =
+    string("inset-x-")
+    |> concat(spacing_scale)
+    |> tag(:inset_x)
+
+  # Inset Y: inset-y-{size}
+  inset_y =
+    string("inset-y-")
+    |> concat(spacing_scale)
+    |> tag(:inset_y)
+
+  # Start: start-{size}
+  start =
+    string("start-")
+    |> concat(spacing_scale)
+    |> tag(:start)
+
+  # End: end-{size}
+  end_position =
+    string("end-")
+    |> concat(spacing_scale)
+    |> tag(:end)
+
+  # Top: top-{size}
+  top =
+    string("top-")
+    |> concat(spacing_scale)
+    |> tag(:top)
+
+  # Right: right-{size}
+  right =
+    string("right-")
+    |> concat(spacing_scale)
+    |> tag(:right)
+
+  # Bottom: bottom-{size}
+  bottom =
+    string("bottom-")
+    |> concat(spacing_scale)
+    |> tag(:bottom)
+
+  # Left: left-{size}
+  left =
+    string("left-")
+    |> concat(spacing_scale)
+    |> tag(:left)
+
+  # Visibility: visible, invisible, collapse
+  visibility =
+    choice([
+      string("visible"),
+      string("invisible"),
+      string("collapse")
+    ])
+    |> eos()
+    |> tag(:visibility)
+
+  # Z-index: z-{index}
+  z =
+    string("z-")
+    |> choice([
+      string("auto"),
+      integer(min: 1, max: 50),
+      string("0"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:z)
+
+  # ===== Typography Classes =====
+
+  # Font size: text-{size}
+  font_size =
+    string("text-")
+    |> choice([
+      string("xs"),
+      string("sm"),
+      string("base"),
+      string("lg"),
+      string("xl"),
+      string("2xl"),
+      string("3xl"),
+      string("4xl"),
+      string("5xl"),
+      string("6xl"),
+      string("7xl"),
+      string("8xl"),
+      string("9xl"),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:font_size)
+
+  # Font smoothing: antialiased, subpixel-antialiased
+  font_smoothing =
+    choice([
+      string("antialiased"),
+      string("subpixel-antialiased")
+    ])
+    |> eos()
+    |> tag(:font_smoothing)
+
+  # Font style: italic, not-italic
+  font_style =
+    choice([
+      string("not-italic"),
+      string("italic")
+    ])
+    |> eos()
+    |> tag(:font_style)
+
+  # Font weight: font-{weight}
+  font_weight =
+    string("font-")
+    |> choice([
+      string("thin"),
+      string("extralight"),
+      string("light"),
+      string("normal"),
+      string("medium"),
+      string("semibold"),
+      string("bold"),
+      string("extrabold"),
+      string("black"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:font_weight)
+
+  # Font family: font-{family}
+  font_family =
+    string("font-")
+    |> choice([
+      string("sans"),
+      string("serif"),
+      string("mono"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:font_family)
+
+  # Font variant numeric - normal
+  fvn_normal =
+    string("normal-nums")
+    |> eos()
+    |> tag(:fvn_normal)
+
+  # Font variant numeric - ordinal
+  fvn_ordinal =
+    string("ordinal")
+    |> eos()
+    |> tag(:fvn_ordinal)
+
+  # Font variant numeric - slashed zero
+  fvn_slashed_zero =
+    string("slashed-zero")
+    |> eos()
+    |> tag(:fvn_slashed_zero)
+
+  # Font variant numeric - figure
+  fvn_figure =
+    choice([
+      string("lining-nums"),
+      string("oldstyle-nums")
+    ])
+    |> eos()
+    |> tag(:fvn_figure)
+
+  # Font variant numeric - spacing
+  fvn_spacing =
+    choice([
+      string("proportional-nums"),
+      string("tabular-nums")
+    ])
+    |> eos()
+    |> tag(:fvn_spacing)
+
+  # Font variant numeric - fraction
+  fvn_fraction =
+    choice([
+      string("diagonal-fractions"),
+      string("stacked-fractions")
+    ])
+    |> eos()
+    |> tag(:fvn_fraction)
+
+  # Letter spacing: tracking-{size}
+  tracking =
+    string("tracking-")
+    |> choice([
+      string("tighter"),
+      string("tight"),
+      string("normal"),
+      string("wide"),
+      string("wider"),
+      string("widest"),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:tracking)
+
+  # Line clamp: line-clamp-{n}
+  line_clamp =
+    string("line-clamp-")
+    |> choice([
+      string("none"),
+      integer(min: 1, max: 6),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:line_clamp)
+
+  # Line height: leading-{size}
+  leading =
+    string("leading-")
+    |> choice([
+      string("none"),
+      string("tight"),
+      string("snug"),
+      string("normal"),
+      string("relaxed"),
+      string("loose"),
+      integer(min: 1, max: 10),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:leading)
+
+  # List image: list-image-{value}
+  list_image =
+    string("list-image-")
+    |> choice([
+      string("none"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:list_image)
+
+  # List style position: list-{inside/outside}
+  list_style_position =
+    string("list-")
+    |> choice([
+      string("inside"),
+      string("outside")
+    ])
+    |> tag(:list_style_position)
+
+  # List style type: list-{type}
+  list_style_type =
+    string("list-")
+    |> choice([
+      string("none"),
+      string("disc"),
+      string("decimal")
+    ])
+    |> tag(:list_style_type)
+
+  # Text alignment: text-{align}
+  text_alignment =
+    string("text-")
+    |> choice([
+      string("left"),
+      string("center"),
+      string("right"),
+      string("justify"),
+      string("start"),
+      string("end")
+    ])
+    |> tag(:text_alignment)
+
+  # Text decoration style: decoration-{style}
+  text_decoration_style =
+    string("decoration-")
+    |> choice([
+      string("solid"),
+      string("double"),
+      string("dotted"),
+      string("dashed"),
+      string("wavy")
+    ])
+    |> tag(:text_decoration_style)
+
+  # Text decoration thickness: decoration-{thickness}
+  text_decoration_thickness =
+    string("decoration-")
+    |> choice([
+      string("auto"),
+      string("from-font"),
+      string("0"),
+      string("1"),
+      string("2"),
+      string("4"),
+      string("8"),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:text_decoration_thickness)
+
+  # Text decoration color: decoration-{color}
+  text_decoration_color =
+    string("decoration-")
+    |> concat(color_value)
+    |> tag(:text_decoration_color)
+
+  # Underline offset: underline-offset-{size}
+  underline_offset =
+    string("underline-offset-")
+    |> choice([
+      string("auto"),
+      string("0"),
+      string("1"),
+      string("2"),
+      string("4"),
+      string("8"),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:underline_offset)
+
+  # Text transform: uppercase, lowercase, capitalize, normal-case
+  text_transform =
+    choice([
+      string("uppercase"),
+      string("lowercase"),
+      string("capitalize"),
+      string("normal-case")
+    ])
+    |> eos()
+    |> tag(:text_transform)
+
+  # Text overflow: truncate, text-ellipsis, text-clip
+  text_overflow =
+    choice([
+      string("truncate"),
+      string("text-ellipsis"),
+      string("text-clip")
+    ])
+    |> eos()
+    |> tag(:text_overflow)
+
+  # Text wrap: text-{wrap}
+  text_wrap =
+    string("text-")
+    |> choice([
+      string("wrap"),
+      string("nowrap"),
+      string("balance"),
+      string("pretty")
+    ])
+    |> tag(:text_wrap)
+
+  # Text indent: indent-{size}
+  indent =
+    string("indent-")
+    |> concat(spacing_scale)
+    |> tag(:indent)
+
+  # Vertical align: align-{position}
+  vertical_align =
+    string("align-")
+    |> choice([
+      string("baseline"),
+      string("top"),
+      string("middle"),
+      string("bottom"),
+      string("text-top"),
+      string("text-bottom"),
+      string("sub"),
+      string("super"),
+      arbitrary_length,
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:vertical_align)
+
+  # Whitespace: whitespace-{value}
+  whitespace =
+    string("whitespace-")
+    |> choice([
+      string("normal"),
+      string("nowrap"),
+      string("pre"),
+      string("pre-line"),
+      string("pre-wrap"),
+      string("break-spaces")
+    ])
+    |> tag(:whitespace)
+
+  # Word break: break-{value}
+  word_break =
+    string("break-")
+    |> choice([
+      string("normal"),
+      string("words"),
+      string("all"),
+      string("keep")
+    ])
+    |> tag(:word_break)
+
+  # Hyphens: hyphens-{value}
+  hyphens =
+    string("hyphens-")
+    |> choice([
+      string("none"),
+      string("manual"),
+      string("auto")
+    ])
+    |> tag(:hyphens)
+
+  # Content: content-{value}
+  content =
+    string("content-")
+    |> choice([
+      string("none"),
+      arbitrary_value,
+      arbitrary_variable
+    ])
+    |> tag(:content)
+
   # Display: block, flex, grid, hidden, etc.
   display =
     choice([
@@ -355,6 +963,7 @@ defmodule TailwindMerge.Parser do
       string("list-item"),
       string("hidden")
     ])
+    |> eos()
     |> tag(:display)
 
   # ===== Flexbox & Grid Classes =====
@@ -924,6 +1533,7 @@ defmodule TailwindMerge.Parser do
 
   class =
     choice([
+      # Flexbox & Grid (before display which has "flex" and "grid")
       flex_direction, flex_wrap, flex,
       justify_items, justify_self, justify_content,
       align_items, align_self, align_content,
@@ -933,13 +1543,51 @@ defmodule TailwindMerge.Parser do
       col_start_end, col_start, col_end,
       row_start_end, row_start, row_end,
       auto_cols, auto_rows,
+      # Layout & Positioning
+      aspect,
+      container,
+      columns,
+      break_after, break_before, break_inside,
+      box_decoration, box,
+      sr,
+      float, clear,
+      isolation,
+      object_position, object_fit,
+      position,
+      inset_x, inset_y, inset,
+      start, end_position,
+      top, right, bottom, left,
+      visibility,
+      z,
+      # Typography (text- and font- parsers before others)
+      # Note: text_color must come before font_size to handle text-[#hex] correctly
+      text_color, text_alignment, text_wrap, font_size,
+      font_weight, font_family,
+      font_smoothing, font_style,
+      fvn_normal, fvn_ordinal, fvn_slashed_zero, fvn_figure, fvn_spacing, fvn_fraction,
+      tracking, line_clamp, leading,
+      list_image, list_style_position, list_style_type,
+      text_decoration_color, text_decoration_thickness, text_decoration_style,
+      underline_offset,
+      text_transform, text_overflow,
+      indent,
+      vertical_align,
+      whitespace, word_break,
+      hyphens,
+      content,
+      # Display
       display,
+      # Sizing
       min_w, max_w, min_h, max_h, size, w, h,
+      # Overflow
       overflow_x, overflow_y, overflow,
+      # Spacing
       space_x, space_y,
       px, py, ps, pe, pt, pr, pb, pl, p,
       mx, my, ms, me, mt, mr, mb, ml, m,
-      bg, text_color, border_color,
+      # Colors
+      bg, border_color,
+      # Other
       stroke_width, stroke,
       grayscale,
       grow,
