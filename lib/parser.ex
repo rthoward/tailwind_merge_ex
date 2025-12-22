@@ -166,7 +166,7 @@ defmodule TailwindMerge.Parser do
   # Tailwind spacing scale: 0, 0.5, 1, 1.5, 2, 2.5, ..., 96, px, auto, full, arbitrary
   # Reference: https://tailwindcss.com/docs/customizing-spacing
 
-  _spacing_scale =
+  spacing_scale =
     choice([
       auto,
       full,
@@ -436,19 +436,183 @@ defmodule TailwindMerge.Parser do
     |> concat(overflow_value)
     |> tag(:overflow_y)
 
-  # Custom fallback: matches any unrecognized class
+  # ===== Spacing Classes =====
+  # Reference: https://tailwindcss.com/docs/padding
+
+  # Padding: p-{size}
+  p =
+    string("p-")
+    |> concat(spacing_scale)
+    |> tag(:p)
+
+  # Padding X: px-{size}
+  px =
+    string("px-")
+    |> concat(spacing_scale)
+    |> tag(:px)
+
+  # Padding Y: py-{size}
+  py =
+    string("py-")
+    |> concat(spacing_scale)
+    |> tag(:py)
+
+  # Padding Start: ps-{size}
+  ps =
+    string("ps-")
+    |> concat(spacing_scale)
+    |> tag(:ps)
+
+  # Padding End: pe-{size}
+  pe =
+    string("pe-")
+    |> concat(spacing_scale)
+    |> tag(:pe)
+
+  # Padding Top: pt-{size}
+  pt =
+    string("pt-")
+    |> concat(spacing_scale)
+    |> tag(:pt)
+
+  # Padding Right: pr-{size}
+  pr =
+    string("pr-")
+    |> concat(spacing_scale)
+    |> tag(:pr)
+
+  # Padding Bottom: pb-{size}
+  pb =
+    string("pb-")
+    |> concat(spacing_scale)
+    |> tag(:pb)
+
+  # Padding Left: pl-{size}
+  pl =
+    string("pl-")
+    |> concat(spacing_scale)
+    |> tag(:pl)
+
+  # Margin: m-{size}
+  m =
+    string("m-")
+    |> concat(spacing_scale)
+    |> tag(:m)
+
+  # Margin X: mx-{size}
+  mx =
+    string("mx-")
+    |> concat(spacing_scale)
+    |> tag(:mx)
+
+  # Margin Y: my-{size}
+  my =
+    string("my-")
+    |> concat(spacing_scale)
+    |> tag(:my)
+
+  # Margin Start: ms-{size}
+  ms =
+    string("ms-")
+    |> concat(spacing_scale)
+    |> tag(:ms)
+
+  # Margin End: me-{size}
+  me =
+    string("me-")
+    |> concat(spacing_scale)
+    |> tag(:me)
+
+  # Margin Top: mt-{size}
+  mt =
+    string("mt-")
+    |> concat(spacing_scale)
+    |> tag(:mt)
+
+  # Margin Right: mr-{size}
+  mr =
+    string("mr-")
+    |> concat(spacing_scale)
+    |> tag(:mr)
+
+  # Margin Bottom: mb-{size}
+  mb =
+    string("mb-")
+    |> concat(spacing_scale)
+    |> tag(:mb)
+
+  # Margin Left: ml-{size}
+  ml =
+    string("ml-")
+    |> concat(spacing_scale)
+    |> tag(:ml)
+
+  # Space Between X: space-x-{size}
+  space_x =
+    string("space-x-")
+    |> concat(spacing_scale)
+    |> tag(:space_x)
+
+  # Space Between Y: space-y-{size}
+  space_y =
+    string("space-y-")
+    |> concat(spacing_scale)
+    |> tag(:space_y)
+
+  # ===== Sizing Classes =====
+  # Reference: https://tailwindcss.com/docs/width
+
+  # Width: w-{size}
+  w =
+    string("w-")
+    |> concat(sizing_scale)
+    |> tag(:w)
+
+  # Min Width: min-w-{size}
+  min_w =
+    string("min-w-")
+    |> concat(sizing_scale)
+    |> tag(:min_w)
+
+  # Max Width: max-w-{size}
+  max_w =
+    string("max-w-")
+    |> concat(sizing_scale)
+    |> tag(:max_w)
+
+  # Min Height: min-h-{size}
+  min_h =
+    string("min-h-")
+    |> concat(sizing_scale)
+    |> tag(:min_h)
+
+  # Max Height: max-h-{size}
+  max_h =
+    string("max-h-")
+    |> concat(sizing_scale)
+    |> tag(:max_h)
+
+  # Size: size-{value} (sets both width and height)
+  size =
+    string("size-")
+    |> concat(sizing_scale)
+    |> tag(:size)
+
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
-  # Main class parser: tries each specific parser, falls back to custom
   class =
     choice([
       display,
+      # Sizing
+      min_w, max_w, min_h, max_h, size, w,
       height,
-      overflow_x,
-      overflow_y,
-      overflow,
-      stroke_width,
-      stroke,
+      # Layout
+      overflow_x, overflow_y, overflow,
+      # Spacing
+      space_x, space_y,
+      px, py, ps, pe, pt, pr, pb, pl, p,
+      mx, my, ms, me, mt, mr, mb, ml, m,
+      stroke_width, stroke,
       grayscale,
       grow,
       mix_blend,
