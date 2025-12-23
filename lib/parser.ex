@@ -1,42 +1,26 @@
 defmodule TailwindMerge.Parser do
   import NimbleParsec
 
-  # ===== Core Value Parsers =====
-  # These are the fundamental building blocks for parsing Tailwind values
-
-  # Integer: any positive integer (e.g., "1", "10", "100")
   integer_value = integer(min: 1)
 
-  # Number: integer with optional decimal (e.g., "1", "1.5", "2.75")
   number_value =
     integer(min: 1)
     |> optional(string(".") |> integer(min: 1))
 
-  # Fraction: numerator/denominator (e.g., "1/2", "3/4", "5/12")
   fraction =
     integer(min: 1)
     |> string("/")
     |> integer(min: 1)
 
-  # Percent: number followed by % (e.g., "50%", "100%", "33.333%")
-  _percent =
-    number_value
-    |> string("%")
+  decimal = integer(min: 1, max: 3) |> string(".") |> integer(min: 1)
 
-  # T-shirt sizes: optional number + size (e.g., "xs", "sm", "md", "lg", "xl", "2xl", "3xl")
-  _tshirt_size =
-    optional(integer(min: 1))
-    |> choice([
-      string("xs"),
-      string("sm"),
-      string("md"),
-      string("lg"),
-      string("xl")
-    ])
+  percentage = integer(min: 1, max: 3) |> string("%")
 
-  # ===== Unit Parsers =====
 
-  # Basic CSS units
+  #
+  # Units
+  #
+
   basic_unit =
     choice([
       string("px"),
@@ -50,7 +34,6 @@ defmodule TailwindMerge.Parser do
       string("%")
     ])
 
-  # Font-relative units
   font_unit =
     choice([
       string("cap"),
@@ -60,7 +43,7 @@ defmodule TailwindMerge.Parser do
       string("lh")
     ])
 
-  # Viewport units: [s|d|l]?v[h|w|i|b|min|max]
+  # [s|d|l]?v[h|w|i|b|min|max]
   viewport_unit =
     optional(choice([string("s"), string("d"), string("l")]))
     |> string("v")
@@ -73,7 +56,7 @@ defmodule TailwindMerge.Parser do
       string("b")
     ])
 
-  # Container query units: cq[w|h|i|b|min|max]
+  # cq[w|h|i|b|min|max]
   container_unit =
     string("cq")
     |> choice([
@@ -87,19 +70,13 @@ defmodule TailwindMerge.Parser do
 
   # Any CSS unit
   any_unit =
-    choice([
-      container_unit,
-      viewport_unit,
-      font_unit,
-      basic_unit
-    ])
+    choice([ container_unit, viewport_unit, font_unit, basic_unit ])
 
-  # Length with unit: number + unit (e.g., "10px", "2rem", "50%", "100vh")
+  # Number + unit (e.g., "10px", "2rem", "50%", "100vh")
   length_with_unit =
     number_value
     |> concat(any_unit)
 
-  # CSS functions: calc, min, max, clamp
   css_function =
     choice([
       string("calc"),
@@ -118,15 +95,9 @@ defmodule TailwindMerge.Parser do
 
   defparsec(:css_function, css_function)
 
-  # ===== Arbitrary Values =====
-  # These are defined as defcombinatorp for performance (heavily reused)
-
-  # Arbitrary value: [value] or [label:value]
-  # Examples: [10px], [color:blue], [length:2rem]
-  arbitrary_value_combinator =
+  arbitrary_value =
     ascii_char([?[])
     |> optional(
-      # Optional label: word followed by colon
       ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 1)
       |> string(":")
     )
@@ -136,14 +107,11 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?]])
 
-  defcombinatorp(:arbitrary_value, arbitrary_value_combinator)
+  defcombinatorp(:arbitrary_value, arbitrary_value)
 
-  # Arbitrary variable: (--var) or (label:--var)
-  # Examples: (--my-color), (color:--theme-primary)
-  arbitrary_variable_combinator =
+  arbitrary_variable =
     ascii_char([?(])
     |> optional(
-      # Optional label: word followed by colon
       ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 1)
       |> string(":")
     )
@@ -153,44 +121,38 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?)])
 
-  defcombinatorp(:arbitrary_variable, arbitrary_variable_combinator)
+  defcombinatorp(:arbitrary_variable, arbitrary_variable)
 
-  # ===== Length Parsers =====
+  #
+  # Length
+  #
 
   length_variable =
     string("length:")
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?(, ?), ?/], min: 1)
 
-  # Arbitrary length: any length value including calc, units, or literal 0
-  arbitrary_length_combinator =
+  arbitrary_length =
     ascii_char([?[])
     |> choice([css_function, length_variable, length_with_unit, string("0")])
     |> ascii_char([?]])
 
-  defparsec(:arbitrary_length, arbitrary_length_combinator)
+  defparsec(:arbitrary_length, arbitrary_length)
 
-  # ===== Common Values =====
+  #
+  # Common values
+  #
 
   none = string("none")
   auto = string("auto")
   full = string("full")
 
-  # ===== Spacing Scale =====
-  # Tailwind spacing scale: 0, 0.5, 1, 1.5, 2, 2.5, ..., 96, px, auto, full, arbitrary
-  # Reference: https://tailwindcss.com/docs/customizing-spacing
-
-  spacing_scale_combinator =
+  spacing_scale =
     choice([
       auto,
       full,
       string("px"),
-      # Decimal values: 0.5, 1.5, 2.5, 3.5
-      integer(min: 1, max: 3)
-      |> string(".")
-      |> ascii_char([?5]),
-      # Integer values: 1, 2, 3, ..., 96
+      decimal,
       integer(min: 1),
-      # Zero as a special case
       string("0"),
       fraction,
       parsec(:arbitrary_length),
@@ -198,14 +160,13 @@ defmodule TailwindMerge.Parser do
       parsec(:arbitrary_variable)
     ])
 
-  defcombinatorp(:spacing_scale, spacing_scale_combinator)
+  defcombinatorp(:spacing_scale, spacing_scale)
 
   # ===== Sizing Values =====
   # Combines spacing scale with additional sizing keywords
 
-  sizing_scale_combinator =
+  sizing_scale =
     choice([
-      # Viewport units (order matters - longer strings first)
       string("vmin"),
       string("vmax"),
       string("dvw"),
@@ -218,22 +179,15 @@ defmodule TailwindMerge.Parser do
       string("vh"),
       string("vi"),
       string("vb"),
-      # Special sizing keywords
       string("screen"),
       string("min"),
       string("max"),
       string("fit"),
-      # Standard spacing values
       auto,
       full,
       string("px"),
-      # Decimal values: 0.5, 1.5, 2.5, 3.5
-      integer(min: 1, max: 3)
-      |> string(".")
-      |> ascii_char([?5]),
-      # Integer values: 1, 2, 3, ...
+      decimal,
       integer(min: 1),
-      # Zero as a special case
       string("0"),
       fraction,
       parsec(:arbitrary_length),
@@ -241,12 +195,12 @@ defmodule TailwindMerge.Parser do
       parsec(:arbitrary_variable)
     ])
 
-  defcombinatorp(:sizing_scale, sizing_scale_combinator)
+  defcombinatorp(:sizing_scale, sizing_scale)
 
-  # ===== Color Values =====
-  # Supports: named colors, hex, rgb, hsl, arbitrary values
+  #
+  # Color
+  #
 
-  # Named color with optional opacity (e.g., "red-500", "blue-500/50")
   named_color =
     ascii_string([?a..?z, ?A..?Z], min: 1)
     |> optional(
@@ -263,7 +217,6 @@ defmodule TailwindMerge.Parser do
       ])
     )
 
-  # Color functions: rgb, rgba, hsl, hsla, hwb, lab, lch, oklab, oklch, color-mix
   color_function =
     choice([
       string("rgba"),
@@ -283,13 +236,9 @@ defmodule TailwindMerge.Parser do
 
   defparsec(:color_function, color_function)
 
-  # Hex color: #RGB, #RRGGBB, #RRGGBBAA
-  hex_color =
-    string("#")
-    |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 3, max: 8)
+  hex_color = string("#") |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 3, max: 8)
 
-  # Any color value
-  color_value_combinator =
+  color_value =
     choice([
       string("transparent"),
       string("current"),
@@ -300,34 +249,27 @@ defmodule TailwindMerge.Parser do
       named_color
     ])
 
-  defcombinatorp(:color_value, color_value_combinator)
+  defcombinatorp(:color_value, color_value)
 
   arbitrary_color_value =
     ascii_char([?[])
     |> parsec(:color_value)
     |> ascii_char([?]])
 
-  # ===== Color Classes =====
-
-  # Background color: bg-{color}
   bg =
     string("bg-")
     |> concat(parsec(:color_value))
     |> tag(:bg)
 
-  # Text color: text-{color}
   text_color =
     string("text-")
     |> choice([parsec(:color_value), arbitrary_color_value])
     |> tag(:text_color)
 
-  # Border color: border-{color}
   border_color =
     string("border-")
     |> concat(parsec(:color_value))
     |> tag(:border_color)
-
-  # ===== Blend Modes =====
 
   blend_mode =
     choice([
@@ -349,12 +291,6 @@ defmodule TailwindMerge.Parser do
       string("luminosity")
     ])
 
-  # ===== Class Group Parsers =====
-  # These parsers recognize specific Tailwind CSS class groups
-
-  # ===== Advanced Features Classes =====
-
-  # Transforms
   rotate =
     string("rotate-")
     |> choice([
@@ -902,9 +838,10 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:fill)
 
-  # ===== Visual Effects Classes =====
+  #
+  # Visual effects
+  #
 
-  # Backgrounds
   bg_attachment =
     string("bg-")
     |> choice([
@@ -997,86 +934,17 @@ defmodule TailwindMerge.Parser do
 
   gradient_from_pos =
     string("from-")
-    |> choice([
-      string("0%"),
-      string("5%"),
-      string("10%"),
-      string("15%"),
-      string("20%"),
-      string("25%"),
-      string("30%"),
-      string("35%"),
-      string("40%"),
-      string("45%"),
-      string("50%"),
-      string("55%"),
-      string("60%"),
-      string("65%"),
-      string("70%"),
-      string("75%"),
-      string("80%"),
-      string("85%"),
-      string("90%"),
-      string("95%"),
-      string("100%"),
-      parsec(:arbitrary_value)
-    ])
+    |> choice([percentage, parsec(:arbitrary_value)])
     |> tag(:gradient_from_pos)
 
   gradient_via_pos =
     string("via-")
-    |> choice([
-      string("0%"),
-      string("5%"),
-      string("10%"),
-      string("15%"),
-      string("20%"),
-      string("25%"),
-      string("30%"),
-      string("35%"),
-      string("40%"),
-      string("45%"),
-      string("50%"),
-      string("55%"),
-      string("60%"),
-      string("65%"),
-      string("70%"),
-      string("75%"),
-      string("80%"),
-      string("85%"),
-      string("90%"),
-      string("95%"),
-      string("100%"),
-      parsec(:arbitrary_value)
-    ])
+    |> choice([percentage, parsec(:arbitrary_value)])
     |> tag(:gradient_via_pos)
 
   gradient_to_pos =
     string("to-")
-    |> choice([
-      string("0%"),
-      string("5%"),
-      string("10%"),
-      string("15%"),
-      string("20%"),
-      string("25%"),
-      string("30%"),
-      string("35%"),
-      string("40%"),
-      string("45%"),
-      string("50%"),
-      string("55%"),
-      string("60%"),
-      string("65%"),
-      string("70%"),
-      string("75%"),
-      string("80%"),
-      string("85%"),
-      string("90%"),
-      string("95%"),
-      string("100%"),
-      parsec(:arbitrary_value)
-    ])
+    |> choice([percentage, parsec(:arbitrary_value)])
     |> tag(:gradient_to_pos)
 
   gradient_from =
@@ -1279,27 +1147,7 @@ defmodule TailwindMerge.Parser do
   opacity =
     string("opacity-")
     |> choice([
-      string("0"),
-      string("5"),
-      string("10"),
-      string("15"),
-      string("20"),
-      string("25"),
-      string("30"),
-      string("35"),
-      string("40"),
-      string("45"),
-      string("50"),
-      string("55"),
-      string("60"),
-      string("65"),
-      string("70"),
-      string("75"),
-      string("80"),
-      string("85"),
-      string("90"),
-      string("95"),
-      string("100"),
+      integer(min: 1, max: 3),
       parsec(:arbitrary_value),
       parsec(:arbitrary_variable)
     ])
@@ -1334,17 +1182,7 @@ defmodule TailwindMerge.Parser do
   brightness =
     string("brightness-")
     |> choice([
-      string("0"),
-      string("50"),
-      string("75"),
-      string("90"),
-      string("95"),
-      string("100"),
-      string("105"),
-      string("110"),
-      string("125"),
-      string("150"),
-      string("200"),
+      integer(min: 1, max: 3),
       parsec(:arbitrary_value),
       parsec(:arbitrary_variable)
     ])
@@ -1533,27 +1371,7 @@ defmodule TailwindMerge.Parser do
   backdrop_opacity =
     string("backdrop-opacity-")
     |> choice([
-      string("0"),
-      string("5"),
-      string("10"),
-      string("15"),
-      string("20"),
-      string("25"),
-      string("30"),
-      string("35"),
-      string("40"),
-      string("45"),
-      string("50"),
-      string("55"),
-      string("60"),
-      string("65"),
-      string("70"),
-      string("75"),
-      string("80"),
-      string("85"),
-      string("90"),
-      string("95"),
-      string("100"),
+      integer(min: 1, max: 3),
       parsec(:arbitrary_value),
       parsec(:arbitrary_variable)
     ])
@@ -1585,9 +1403,10 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:backdrop_sepia)
 
-  # ===== Layout & Positioning Classes =====
+  #
+  # Layout and positioning
+  #
 
-  # Aspect ratio: aspect-{ratio}
   aspect =
     string("aspect-")
     |> choice([
@@ -1600,13 +1419,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:aspect)
 
-  # Container: container
   container =
     string("container")
     |> eos()
     |> tag(:container)
 
-  # Columns: columns-{n}
   columns =
     string("columns-")
     |> choice([
@@ -1618,7 +1435,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:columns)
 
-  # Break after: break-after-{value}
   break_after =
     string("break-after-")
     |> choice([
@@ -1633,7 +1449,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:break_after)
 
-  # Break before: break-before-{value}
   break_before =
     string("break-before-")
     |> choice([
@@ -1648,7 +1463,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:break_before)
 
-  # Break inside: break-inside-{value}
   break_inside =
     string("break-inside-")
     |> choice([
@@ -1659,7 +1473,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:break_inside)
 
-  # Box decoration: box-decoration-{slice/clone}
   box_decoration =
     string("box-decoration-")
     |> choice([
@@ -1668,21 +1481,14 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:box_decoration)
 
-  # Box sizing: box-{border/content}
   box =
     string("box-")
-    |> choice([
-      string("border"),
-      string("content")
-    ])
+    |> choice([ string("border"), string("content") ])
     |> tag(:box)
 
   # Screen reader: sr-only, not-sr-only
   sr =
-    choice([
-      string("sr-only"),
-      string("not-sr-only")
-    ])
+    choice([ string("sr-only"), string("not-sr-only") ])
     |> eos()
     |> tag(:sr)
 
