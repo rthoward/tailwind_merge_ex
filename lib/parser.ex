@@ -16,7 +16,6 @@ defmodule TailwindMerge.Parser do
 
   percentage = integer(min: 1, max: 3) |> string("%")
 
-
   #
   # Units
   #
@@ -70,7 +69,7 @@ defmodule TailwindMerge.Parser do
 
   # Any CSS unit
   any_unit =
-    choice([ container_unit, viewport_unit, font_unit, basic_unit ])
+    choice([container_unit, viewport_unit, font_unit, basic_unit])
 
   # Number + unit (e.g., "10px", "2rem", "50%", "100vh")
   length_with_unit =
@@ -1483,12 +1482,12 @@ defmodule TailwindMerge.Parser do
 
   box =
     string("box-")
-    |> choice([ string("border"), string("content") ])
+    |> choice([string("border"), string("content")])
     |> tag(:box)
 
   # Screen reader: sr-only, not-sr-only
   sr =
-    choice([ string("sr-only"), string("not-sr-only") ])
+    choice([string("sr-only"), string("not-sr-only")])
     |> eos()
     |> tag(:sr)
 
