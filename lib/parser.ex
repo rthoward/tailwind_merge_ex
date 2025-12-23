@@ -1485,13 +1485,11 @@ defmodule TailwindMerge.Parser do
     |> choice([string("border"), string("content")])
     |> tag(:box)
 
-  # Screen reader: sr-only, not-sr-only
   sr =
     choice([string("sr-only"), string("not-sr-only")])
     |> eos()
     |> tag(:sr)
 
-  # Float: float-{direction}
   float =
     string("float-")
     |> choice([
@@ -1503,7 +1501,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:float)
 
-  # Clear: clear-{direction}
   clear =
     string("clear-")
     |> choice([
@@ -1516,7 +1513,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:clear)
 
-  # Isolation: isolate, isolation-auto
   isolation =
     choice([
       string("isolation-auto"),
@@ -1555,7 +1551,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:object_position)
 
-  # Position: static, fixed, absolute, relative, sticky
   position =
     choice([
       string("static"),
@@ -1567,61 +1562,51 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:position)
 
-  # Inset: inset-{size}
   inset =
     string("inset-")
     |> concat(parsec(:spacing_scale))
     |> tag(:inset)
 
-  # Inset X: inset-x-{size}
   inset_x =
     string("inset-x-")
     |> concat(parsec(:spacing_scale))
     |> tag(:inset_x)
 
-  # Inset Y: inset-y-{size}
   inset_y =
     string("inset-y-")
     |> concat(parsec(:spacing_scale))
     |> tag(:inset_y)
 
-  # Start: start-{size}
   start =
     string("start-")
     |> concat(parsec(:spacing_scale))
     |> tag(:start)
 
-  # End: end-{size}
   end_position =
     string("end-")
     |> concat(parsec(:spacing_scale))
     |> tag(:end)
 
-  # Top: top-{size}
   top =
     string("top-")
     |> concat(parsec(:spacing_scale))
     |> tag(:top)
 
-  # Right: right-{size}
   right =
     string("right-")
     |> concat(parsec(:spacing_scale))
     |> tag(:right)
 
-  # Bottom: bottom-{size}
   bottom =
     string("bottom-")
     |> concat(parsec(:spacing_scale))
     |> tag(:bottom)
 
-  # Left: left-{size}
   left =
     string("left-")
     |> concat(parsec(:spacing_scale))
     |> tag(:left)
 
-  # Visibility: visible, invisible, collapse
   visibility =
     choice([
       string("visible"),
@@ -1631,7 +1616,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:visibility)
 
-  # Z-index: z-{index}
   z =
     string("z-")
     |> choice([
@@ -1643,9 +1627,10 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:z)
 
-  # ===== Typography Classes =====
+  #
+  # Typography
+  #
 
-  # Font size: text-{size}
   font_size =
     string("text-")
     |> choice([
@@ -1667,7 +1652,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:font_size)
 
-  # Font smoothing: antialiased, subpixel-antialiased
   font_smoothing =
     choice([
       string("antialiased"),
@@ -1676,7 +1660,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:font_smoothing)
 
-  # Font style: italic, not-italic
   font_style =
     choice([
       string("not-italic"),
@@ -1685,7 +1668,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:font_style)
 
-  # Font weight: font-{weight}
   font_weight =
     string("font-")
     |> choice([
@@ -1703,7 +1685,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:font_weight)
 
-  # Font family: font-{family}
   font_family =
     string("font-")
     |> choice([
@@ -1715,7 +1696,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:font_family)
 
-  # Font variant numeric - normal
   fvn_normal =
     string("normal-nums")
     |> eos()
@@ -1727,13 +1707,11 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:fvn_ordinal)
 
-  # Font variant numeric - slashed zero
   fvn_slashed_zero =
     string("slashed-zero")
     |> eos()
     |> tag(:fvn_slashed_zero)
 
-  # Font variant numeric - figure
   fvn_figure =
     choice([
       string("lining-nums"),
@@ -1742,7 +1720,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:fvn_figure)
 
-  # Font variant numeric - spacing
   fvn_spacing =
     choice([
       string("proportional-nums"),
@@ -1751,7 +1728,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:fvn_spacing)
 
-  # Font variant numeric - fraction
   fvn_fraction =
     choice([
       string("diagonal-fractions"),
@@ -1760,7 +1736,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:fvn_fraction)
 
-  # Letter spacing: tracking-{size}
   tracking =
     string("tracking-")
     |> choice([
@@ -1776,7 +1751,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:tracking)
 
-  # Line clamp: line-clamp-{n}
   line_clamp =
     string("line-clamp-")
     |> choice([
@@ -1787,7 +1761,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:line_clamp)
 
-  # Line height: leading-{size}
   leading =
     string("leading-")
     |> choice([
@@ -1804,7 +1777,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:leading)
 
-  # List image: list-image-{value}
   list_image =
     string("list-image-")
     |> choice([
@@ -1814,7 +1786,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:list_image)
 
-  # List style position: list-{inside/outside}
   list_style_position =
     string("list-")
     |> choice([
@@ -1823,7 +1794,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:list_style_position)
 
-  # List style type: list-{type}
   list_style_type =
     string("list-")
     |> choice([
@@ -1833,7 +1803,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:list_style_type)
 
-  # Text alignment: text-{align}
   text_alignment =
     string("text-")
     |> choice([
@@ -1846,7 +1815,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_alignment)
 
-  # Text decoration style: decoration-{style}
   text_decoration_style =
     string("decoration-")
     |> choice([
@@ -1858,7 +1826,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration_style)
 
-  # Text decoration thickness: decoration-{thickness}
   text_decoration_thickness =
     string("decoration-")
     |> choice([
@@ -1875,13 +1842,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration_thickness)
 
-  # Text decoration color: decoration-{color}
   text_decoration_color =
     string("decoration-")
     |> concat(parsec(:color_value))
     |> tag(:text_decoration_color)
 
-  # Underline offset: underline-offset-{size}
   underline_offset =
     string("underline-offset-")
     |> choice([
@@ -1897,7 +1862,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:underline_offset)
 
-  # Text transform: uppercase, lowercase, capitalize, normal-case
   text_transform =
     choice([
       string("uppercase"),
@@ -1908,7 +1872,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:text_transform)
 
-  # Text overflow: truncate, text-ellipsis, text-clip
   text_overflow =
     choice([
       string("truncate"),
@@ -1918,7 +1881,6 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:text_overflow)
 
-  # Text wrap: text-{wrap}
   text_wrap =
     string("text-")
     |> choice([
@@ -1929,13 +1891,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_wrap)
 
-  # Text indent: indent-{size}
   indent =
     string("indent-")
     |> concat(parsec(:spacing_scale))
     |> tag(:indent)
 
-  # Vertical align: align-{position}
   vertical_align =
     string("align-")
     |> choice([
@@ -1953,7 +1913,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:vertical_align)
 
-  # Whitespace: whitespace-{value}
   whitespace =
     string("whitespace-")
     |> choice([
@@ -1966,7 +1925,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:whitespace)
 
-  # Word break: break-{value}
   word_break =
     string("break-")
     |> choice([
@@ -1977,7 +1935,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:word_break)
 
-  # Hyphens: hyphens-{value}
   hyphens =
     string("hyphens-")
     |> choice([
@@ -1987,7 +1944,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:hyphens)
 
-  # Content: content-{value}
   content =
     string("content-")
     |> choice([
@@ -1997,7 +1953,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:content)
 
-  # Display: block, flex, grid, hidden, etc.
   display =
     choice([
       string("block"),
@@ -2025,9 +1980,10 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:display)
 
-  # ===== Flexbox & Grid Classes =====
+  #
+  # Flexbox and grid
+  #
 
-  # Flex: flex-{value}
   flex =
     string("flex-")
     |> choice([
@@ -2040,7 +1996,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:flex)
 
-  # Flex direction: flex-row, flex-col, etc.
   flex_direction =
     string("flex-")
     |> choice([
@@ -2051,17 +2006,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:flex_direction)
 
-  # Flex wrap: flex-wrap, flex-nowrap, etc.
   flex_wrap =
     string("flex-")
-    |> choice([
-      string("wrap-reverse"),
-      string("nowrap"),
-      string("wrap")
-    ])
+    |> choice([string("wrap-reverse"), string("nowrap"), string("wrap")])
     |> tag(:flex_wrap)
 
-  # Justify content: justify-{alignment}
   justify_content =
     string("justify-")
     |> choice([
@@ -2076,7 +2025,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:justify_content)
 
-  # Justify items: justify-items-{alignment}
   justify_items =
     string("justify-items-")
     |> choice([
@@ -2087,7 +2035,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:justify_items)
 
-  # Justify self: justify-self-{alignment}
   justify_self =
     string("justify-self-")
     |> choice([
@@ -2099,7 +2046,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:justify_self)
 
-  # Align content: content-{alignment}
   align_content =
     string("content-")
     |> choice([
@@ -2115,7 +2061,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:align_content)
 
-  # Align items: items-{alignment}
   align_items =
     string("items-")
     |> choice([
@@ -2127,7 +2072,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:align_items)
 
-  # Align self: self-{alignment}
   align_self =
     string("self-")
     |> choice([
@@ -2140,7 +2084,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:align_self)
 
-  # Place content: place-content-{alignment}
   place_content =
     string("place-content-")
     |> choice([
@@ -2155,7 +2098,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:place_content)
 
-  # Place items: place-items-{alignment}
   place_items =
     string("place-items-")
     |> choice([
@@ -2167,7 +2109,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:place_items)
 
-  # Place self: place-self-{alignment}
   place_self =
     string("place-self-")
     |> choice([
@@ -2179,25 +2120,21 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:place_self)
 
-  # Gap: gap-{size}
   gap =
     string("gap-")
     |> concat(parsec(:spacing_scale))
     |> tag(:gap)
 
-  # Gap X: gap-x-{size}
   gap_x =
     string("gap-x-")
     |> concat(parsec(:spacing_scale))
     |> tag(:gap_x)
 
-  # Gap Y: gap-y-{size}
   gap_y =
     string("gap-y-")
     |> concat(parsec(:spacing_scale))
     |> tag(:gap_y)
 
-  # Grid columns: grid-cols-{n}
   grid_cols =
     string("grid-cols-")
     |> choice([
@@ -2209,7 +2146,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:grid_cols)
 
-  # Column span: col-span-{n}
   col_start_end =
     string("col-span-")
     |> choice([
@@ -2221,7 +2157,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:col_start_end)
 
-  # Column start: col-start-{n}
   col_start =
     string("col-start-")
     |> choice([
@@ -2232,7 +2167,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:col_start)
 
-  # Column end: col-end-{n}
   col_end =
     string("col-end-")
     |> choice([
@@ -2243,7 +2177,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:col_end)
 
-  # Grid rows: grid-rows-{n}
   grid_rows =
     string("grid-rows-")
     |> choice([
@@ -2255,7 +2188,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:grid_rows)
 
-  # Row span: row-span-{n}
   row_start_end =
     string("row-span-")
     |> choice([
@@ -2267,7 +2199,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:row_start_end)
 
-  # Row start: row-start-{n}
   row_start =
     string("row-start-")
     |> choice([
@@ -2278,7 +2209,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:row_start)
 
-  # Row end: row-end-{n}
   row_end =
     string("row-end-")
     |> choice([
@@ -2289,7 +2219,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:row_end)
 
-  # Grid flow: grid-flow-{direction}
   grid_flow =
     string("grid-flow-")
     |> choice([
@@ -2301,7 +2230,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:grid_flow)
 
-  # Auto columns: auto-cols-{size}
   auto_cols =
     string("auto-cols-")
     |> choice([
@@ -2314,7 +2242,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:auto_cols)
 
-  # Auto rows: auto-rows-{size}
   auto_rows =
     string("auto-rows-")
     |> choice([
@@ -2327,13 +2254,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:auto_rows)
 
-  # Height: h-{size}
   h =
     string("h-")
     |> concat(parsec(:sizing_scale))
     |> tag(:height)
 
-  # Stroke width: stroke-{width}
   stroke_width =
     string("stroke-")
     |> choice([
@@ -2342,13 +2267,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:stroke_width)
 
-  # Stroke color: stroke-{color}
   stroke =
     string("stroke-")
     |> choice([none, arbitrary_color_value])
     |> tag(:stroke)
 
-  # Grayscale: grayscale or grayscale-{value}
   grayscale =
     string("grayscale")
     |> choice([
@@ -2363,7 +2286,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:grayscale)
 
-  # Grow: grow or grow-{value}
   grow =
     string("grow")
     |> choice([
@@ -2378,7 +2300,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:grow)
 
-  # Mix blend mode: mix-blend-{mode}
   mix_blend =
     string("mix-blend-")
     |> choice([
@@ -2388,7 +2309,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:mix_blend)
 
-  # Text decoration: underline, overline, line-through, no-underline
   text_decoration =
     choice([
       string("underline"),
@@ -2398,7 +2318,6 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration)
 
-  # Overflow: overflow-{value}
   overflow_value =
     choice([
       string("auto"),
@@ -2413,175 +2332,149 @@ defmodule TailwindMerge.Parser do
     |> concat(overflow_value)
     |> tag(:overflow)
 
-  # Overflow X: overflow-x-{value}
   overflow_x =
     string("overflow-x-")
     |> concat(overflow_value)
     |> tag(:overflow_x)
 
-  # Overflow Y: overflow-y-{value}
   overflow_y =
     string("overflow-y-")
     |> concat(overflow_value)
     |> tag(:overflow_y)
 
-  # ===== Spacing Classes =====
-  # Reference: https://tailwindcss.com/docs/padding
+  #
+  # Spacing
+  #
 
-  # Padding: p-{size}
   p =
     string("p-")
     |> concat(parsec(:spacing_scale))
     |> tag(:p)
 
-  # Padding X: px-{size}
   px =
     string("px-")
     |> concat(parsec(:spacing_scale))
     |> tag(:px)
 
-  # Padding Y: py-{size}
   py =
     string("py-")
     |> concat(parsec(:spacing_scale))
     |> tag(:py)
 
-  # Padding Start: ps-{size}
   ps =
     string("ps-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ps)
 
-  # Padding End: pe-{size}
   pe =
     string("pe-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pe)
 
-  # Padding Top: pt-{size}
   pt =
     string("pt-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pt)
 
-  # Padding Right: pr-{size}
   pr =
     string("pr-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pr)
 
-  # Padding Bottom: pb-{size}
   pb =
     string("pb-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pb)
 
-  # Padding Left: pl-{size}
   pl =
     string("pl-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pl)
 
-  # Margin: m-{size}
   m =
     string("m-")
     |> concat(parsec(:spacing_scale))
     |> tag(:m)
 
-  # Margin X: mx-{size}
   mx =
     string("mx-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mx)
 
-  # Margin Y: my-{size}
   my =
     string("my-")
     |> concat(parsec(:spacing_scale))
     |> tag(:my)
 
-  # Margin Start: ms-{size}
   ms =
     string("ms-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ms)
 
-  # Margin End: me-{size}
   me =
     string("me-")
     |> concat(parsec(:spacing_scale))
     |> tag(:me)
 
-  # Margin Top: mt-{size}
   mt =
     string("mt-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mt)
 
-  # Margin Right: mr-{size}
   mr =
     string("mr-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mr)
 
-  # Margin Bottom: mb-{size}
   mb =
     string("mb-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mb)
 
-  # Margin Left: ml-{size}
   ml =
     string("ml-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ml)
 
-  # Space Between X: space-x-{size}
   space_x =
     string("space-x-")
     |> concat(parsec(:spacing_scale))
     |> tag(:space_x)
 
-  # Space Between Y: space-y-{size}
   space_y =
     string("space-y-")
     |> concat(parsec(:spacing_scale))
     |> tag(:space_y)
 
-  # ===== Sizing Classes =====
-  # Reference: https://tailwindcss.com/docs/width
+  #
+  # Sizing
+  #
 
-  # Width: w-{size}
   w =
     string("w-")
     |> concat(parsec(:sizing_scale))
     |> tag(:w)
 
-  # Min Width: min-w-{size}
   min_w =
     string("min-w-")
     |> concat(parsec(:sizing_scale))
     |> tag(:min_w)
 
-  # Max Width: max-w-{size}
   max_w =
     string("max-w-")
     |> concat(parsec(:sizing_scale))
     |> tag(:max_w)
 
-  # Min Height: min-h-{size}
   min_h =
     string("min-h-")
     |> concat(parsec(:sizing_scale))
     |> tag(:min_h)
 
-  # Max Height: max-h-{size}
   max_h =
     string("max-h-")
     |> concat(parsec(:sizing_scale))
     |> tag(:max_h)
 
-  # Size: size-{value} (sets both width and height)
   size =
     string("size-")
     |> concat(parsec(:sizing_scale))
@@ -2601,32 +2494,13 @@ defmodule TailwindMerge.Parser do
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:arbitrary_modifier)
 
-  modifiers =
-    choice([regular_modifier, arbitrary_modifier])
-    |> repeat()
+  modifiers = choice([regular_modifier, arbitrary_modifier]) |> repeat()
 
   class =
     choice([
-      # Visual Effects (bg-, backdrop-, outline-, divide- prefixes need careful ordering)
-      # Backgrounds - more specific before less specific
-      bg_attachment,
-      bg_clip,
-      bg_origin,
-      bg_repeat,
-      bg_blend,
-      gradient_from_pos,
-      gradient_via_pos,
-      gradient_to_pos,
-      gradient_from,
-      gradient_via,
-      gradient_to,
-      # Background color - before bg-* parsers with arbitrary_value
-      bg,
-      # These have arbitrary_value, must come after bg
-      bg_size,
-      bg_image,
-      bg_position,
-      # Backdrop filters
+      bg_attachment, bg_clip, bg_origin, bg_repeat, bg_blend,
+      gradient_from_pos, gradient_via_pos, gradient_to_pos, gradient_from, gradient_via, gradient_to,
+      bg, bg_size, bg_image, bg_position,
       backdrop_blur,
       backdrop_brightness,
       backdrop_contrast,
@@ -2636,7 +2510,6 @@ defmodule TailwindMerge.Parser do
       backdrop_opacity,
       backdrop_saturate,
       backdrop_sepia,
-      # Filters
       blur,
       brightness,
       contrast,
@@ -2645,79 +2518,32 @@ defmodule TailwindMerge.Parser do
       invert,
       saturate,
       sepia,
-      # Borders & Outlines (table borders before regular borders)
-      border_collapse,
-      border_spacing_x,
-      border_spacing_y,
-      border_spacing,
+      border_collapse, border_spacing_x, border_spacing_y, border_spacing,
       table_layout,
       caption,
       rounded,
       border_w,
       border_style,
-      divide_x,
-      divide_y,
-      divide_style,
-      divide_color,
-      outline_style,
-      outline_offset,
-      outline_w,
-      outline_color,
-      # Shadows & Effects
-      shadow,
-      shadow_color,
+      divide_x, divide_y, divide_style, divide_color,
+      outline_style, outline_offset, outline_w, outline_color,
+      shadow, shadow_color,
       opacity,
-      # Transforms & Transitions
-      scale_x,
-      scale_y,
-      scale,
-      rotate,
-      skew_x,
-      skew_y,
-      translate_x,
-      translate_y,
-      translate_none,
-      transform_origin,
-      perspective,
-      perspective_origin,
-      transition,
-      duration,
-      ease,
-      delay,
-      animate,
-      # Flexbox & Grid (before display which has "flex" and "grid")
-      flex_direction,
-      flex_wrap,
-      flex,
-      justify_items,
-      justify_self,
-      justify_content,
-      align_items,
-      align_self,
-      align_content,
-      place_content,
-      place_items,
-      place_self,
-      gap_x,
-      gap_y,
-      gap,
-      grid_cols,
-      grid_rows,
-      grid_flow,
-      col_start_end,
-      col_start,
-      col_end,
-      row_start_end,
-      row_start,
-      row_end,
-      auto_cols,
-      auto_rows,
-      # Layout & Positioning
+      scale_x, scale_y, scale, rotate, skew_x, skew_y, translate_x, translate_y, translate_none, transform_origin,
+      perspective, perspective_origin,
+      transition, duration, ease, delay, animate,
+      flex_direction, flex_wrap, flex,
+      justify_items, justify_self, justify_content,
+      align_items, align_self, align_content,
+      place_content, place_items, place_self,
+      gap_x, gap_y, gap,
+      grid_cols, grid_rows, grid_flow,
+      col_start_end, col_start, col_end,
+      row_start_end, row_start, row_end,
+      auto_cols, auto_rows,
       aspect,
       container,
       columns,
-      break_after,
-      break_before,
+      break_after, break_before,
       break_inside,
       box_decoration,
       box,
@@ -2728,42 +2554,20 @@ defmodule TailwindMerge.Parser do
       object_position,
       object_fit,
       position,
-      inset_x,
-      inset_y,
-      inset,
+      inset_x, inset_y, inset,
       start,
       end_position,
-      top,
-      right,
-      bottom,
-      left,
+      top, right, bottom, left,
       visibility,
       z,
-      # Typography (text- and font- parsers before others)
-      # Note: text_color must come before font_size to handle text-[#hex] correctly
-      text_color,
-      text_alignment,
-      text_wrap,
-      font_size,
-      font_weight,
-      font_family,
-      font_smoothing,
-      font_style,
-      fvn_normal,
-      fvn_ordinal,
-      fvn_slashed_zero,
-      fvn_figure,
-      fvn_spacing,
-      fvn_fraction,
+      text_color, text_alignment, text_wrap,
+      font_size, font_weight, font_family, font_smoothing, font_style,
+      fvn_normal, fvn_ordinal, fvn_slashed_zero, fvn_figure, fvn_spacing, fvn_fraction,
       tracking,
       line_clamp,
       leading,
-      list_image,
-      list_style_position,
-      list_style_type,
-      text_decoration_color,
-      text_decoration_thickness,
-      text_decoration_style,
+      list_image, list_style_position, list_style_type,
+      text_decoration_color, text_decoration_thickness, text_decoration_style,
       underline_offset,
       text_transform,
       text_overflow,
@@ -2773,79 +2577,25 @@ defmodule TailwindMerge.Parser do
       word_break,
       hyphens,
       content,
-      # Interactivity
-      scroll_mx,
-      scroll_my,
-      scroll_ms,
-      scroll_me,
-      scroll_mt,
-      scroll_mr,
-      scroll_mb,
-      scroll_ml,
-      scroll_m,
-      scroll_px,
-      scroll_py,
-      scroll_ps,
-      scroll_pe,
-      scroll_pt,
-      scroll_pr,
-      scroll_pb,
-      scroll_pl,
-      scroll_p,
+      scroll_mx, scroll_my, scroll_ms, scroll_me, scroll_mt, scroll_mr, scroll_mb, scroll_ml, scroll_m,
+      scroll_px, scroll_py, scroll_ps, scroll_pe, scroll_pt, scroll_pr, scroll_pb, scroll_pl, scroll_p,
       scroll_behavior,
-      snap_align,
-      snap_stop,
-      snap_type,
-      touch_x,
-      touch_y,
-      touch_pz,
-      touch,
+      snap_align, snap_stop, snap_type,
+      touch_x, touch_y, touch_pz, touch,
       cursor,
       pointer_events,
       resize,
       user_select,
       will_change,
-      # Display
       display,
-      # Sizing
-      min_w,
-      max_w,
-      min_h,
-      max_h,
-      size,
-      w,
-      h,
-      # Overflow
-      overflow_x,
-      overflow_y,
-      overflow,
-      # Spacing
-      space_x,
-      space_y,
-      px,
-      py,
-      ps,
-      pe,
-      pt,
-      pr,
-      pb,
-      pl,
-      p,
-      mx,
-      my,
-      ms,
-      me,
-      mt,
-      mr,
-      mb,
-      ml,
-      m,
-      # Colors
+      min_w, max_w, min_h, max_h, size, w, h,
+      overflow_x, overflow_y, overflow,
+      space_x, space_y,
+      px, py, ps, pe, pt, pr, pb, pl, p,
+      mx, my, ms, me, mt, mr, mb, ml, m,
       border_color,
-      # Other (SVG and effects)
       fill,
-      stroke,
-      stroke_width,
+      stroke, stroke_width,
       grayscale,
       grow,
       mix_blend,
