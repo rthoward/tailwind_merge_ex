@@ -23,14 +23,18 @@ defmodule TailwindMerge do
     |> Enum.map(&Parsed.new/1)
     |> Enum.reverse()
     |> Enum.reduce({%{}, []}, fn parsed, {seen_groups, acc} ->
-      dbg(parsed)
       conflicting_groups = Conflicts.groups(parsed.group)
       group_match = get_in(seen_groups, [parsed.group, parsed.modifiers])
       conflict? = !is_nil(group_match) && (!parsed.important? || group_match)
 
       seen_groups =
         Enum.reduce(conflicting_groups, seen_groups, fn group, seen_groups ->
-          Map.put(seen_groups, group, %{parsed.modifiers => parsed.important?})
+          Map.update(
+            seen_groups,
+            group,
+            %{parsed.modifiers => parsed.important?},
+            &Map.put(&1, parsed.modifiers, parsed.important?)
+          )
         end)
 
       if !conflict?,

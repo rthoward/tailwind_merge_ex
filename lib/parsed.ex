@@ -5,7 +5,7 @@ defmodule TailwindMerge.Parsed do
 
   def new(class) do
     {modifiers, base_classname} =
-      case Parser.modifiers(class) |> dbg() do
+      case Parser.modifiers(class) do
         {:ok, modifiers, base_classname, _, _, _} -> {modifiers, base_classname}
         error -> raise "Failed to parse #{class}: #{inspect(error)}"
       end
@@ -25,7 +25,6 @@ defmodule TailwindMerge.Parsed do
       modifiers: sort_modifiers(modifiers),
       important?: important?
     }
-    |> dbg()
   end
 
   defp sort_modifiers(modifiers) do

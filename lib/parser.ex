@@ -105,14 +105,18 @@ defmodule TailwindMerge.Parser do
       string("calc"),
       string("min"),
       string("max"),
-      string("clamp")
+      string("clamp"),
+      string("theme")
     ])
     |> string("(")
-    |> repeat(
-      lookahead_not(string(")"))
-      |> utf8_char([])
-    )
+    |> choice([
+      parsec(:css_function),
+      ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?/], min: 0)
+    ])
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?/], min: 0)
     |> string(")")
+
+  defparsec(:css_function, css_function)
 
   # ===== Arbitrary Values =====
   # These are defined as defcombinatorp for performance (heavily reused)
@@ -153,11 +157,17 @@ defmodule TailwindMerge.Parser do
 
   # ===== Length Parsers =====
 
+  length_variable =
+    string("length:")
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?(, ?), ?/], min: 1)
+
   # Arbitrary length: any length value including calc, units, or literal 0
   arbitrary_length_combinator =
     ascii_char([?[])
-    |> choice([css_function, length_with_unit, string("0")])
+    |> choice([css_function, length_variable, length_with_unit, string("0")])
     |> ascii_char([?]])
+
+  defparsec(:arbitrary_length, arbitrary_length_combinator)
 
   # ===== Common Values =====
 
@@ -271,7 +281,7 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?%], min: 1)
     |> ascii_char([?)])
 
-  defparsec :color_function, color_function
+  defparsec(:color_function, color_function)
 
   # Hex color: #RGB, #RRGGBB, #RRGGBBAA
   hex_color =
@@ -284,11 +294,10 @@ defmodule TailwindMerge.Parser do
       string("transparent"),
       string("current"),
       string("inherit"),
+      string("color:0"),
       color_function,
       hex_color,
-      named_color,
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      named_color
     ])
 
   defcombinatorp(:color_value, color_value_combinator)
@@ -309,7 +318,7 @@ defmodule TailwindMerge.Parser do
   # Text color: text-{color}
   text_color =
     string("text-")
-    |> concat(parsec(:color_value))
+    |> choice([parsec(:color_value), arbitrary_color_value])
     |> tag(:text_color)
 
   # Border color: border-{color}
@@ -1107,21 +1116,27 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:rounded)
 
+  side =
+    choice([
+      string("x"),
+      string("y"),
+      string("t"),
+      string("b"),
+      string("l"),
+      string("r"),
+      string("s"),
+      string("e")
+    ])
+
   border_w =
     string("border")
     |> choice([
       eos(),
-      string("-")
-      |> choice([
-        string("0"),
-        string("2"),
-        string("4"),
-        string("8"),
-        string("1"),
-        parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
-      ])
+      string("-") |> integer(min: 1),
+      string("-") |> concat(side) |> optional(string("-") |> integer(min: 1)),
+      integer(min: 1),
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_variable)
     ])
     |> tag(:border_w)
 
@@ -1843,7 +1858,6 @@ defmodule TailwindMerge.Parser do
       string("8xl"),
       string("9xl"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
       parsec(:arbitrary_variable)
     ])
     |> tag(:font_size)
@@ -2519,7 +2533,7 @@ defmodule TailwindMerge.Parser do
     string("stroke-")
     |> choice([
       integer_value,
-      parsec(:arbitrary_length),
+      parsec(:arbitrary_length)
     ])
     |> tag(:stroke_width)
 
