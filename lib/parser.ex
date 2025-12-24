@@ -186,6 +186,7 @@ defmodule TailwindMerge.Parser do
       string("min"),
       string("max"),
       string("fit"),
+      string("lh"),
       auto,
       full,
       string("px"),
