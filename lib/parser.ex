@@ -156,7 +156,33 @@ defmodule TailwindMerge.Parser do
       parsec(:arbitrary_variable)
     ])
 
+  scale_align_primary_axis =
+    choice([
+      string("start"),
+      string("end-safe"),
+      string("end"),
+      string("center-safe"),
+      string("center"),
+      string("between"),
+      string("around"),
+      string("evenly"),
+      string("stretch"),
+      string("baseline")
+    ])
+
+  scale_align_secondary_axis =
+    choice([
+      string("center-safe"),
+      string("end-safe"),
+      string("start"),
+      string("end"),
+      string("center"),
+      string("stretch")
+    ])
+
   defcombinatorp(:spacing_scale, spacing_scale)
+  defcombinatorp(:scale_align_primary_axis, scale_align_primary_axis)
+  defcombinatorp(:scale_align_secondary_axis, scale_align_secondary_axis)
 
   # ===== Sizing Values =====
   # Combines spacing scale with additional sizing keywords
@@ -739,12 +765,7 @@ defmodule TailwindMerge.Parser do
 
   snap_align =
     string("snap-")
-    |> choice([
-      string("start"),
-      string("end"),
-      string("center"),
-      string("align-none")
-    ])
+    |> parsec(:scale_align_secondary_axis)
     |> eos()
     |> tag(:snap_align)
 
@@ -2031,23 +2052,12 @@ defmodule TailwindMerge.Parser do
 
   justify_items =
     string("justify-items-")
-    |> choice([
-      string("start"),
-      string("end"),
-      string("center"),
-      string("stretch")
-    ])
+    |> parsec(:scale_align_secondary_axis)
     |> tag(:justify_items)
 
   justify_self =
     string("justify-self-")
-    |> choice([
-      string("auto"),
-      string("start"),
-      string("end"),
-      string("center"),
-      string("stretch")
-    ])
+    |> parsec(:scale_align_secondary_axis)
     |> tag(:justify_self)
 
   align_content =
@@ -2068,60 +2078,35 @@ defmodule TailwindMerge.Parser do
   align_items =
     string("items-")
     |> choice([
-      string("start"),
-      string("end"),
-      string("center"),
-      string("baseline"),
-      string("stretch")
+    parsec(:scale_align_secondary_axis),
+      string("baseline-last"),
+      string("baseline")
     ])
     |> tag(:align_items)
 
   align_self =
     string("self-")
     |> choice([
+      parsec(:scale_align_secondary_axis),
+      string("baseline-last"),
+      string("baseline"),
       string("auto"),
-      string("start"),
-      string("end"),
-      string("center"),
-      string("stretch"),
-      string("baseline")
     ])
     |> tag(:align_self)
 
   place_content =
     string("place-content-")
-    |> choice([
-      string("start"),
-      string("end"),
-      string("center"),
-      string("between"),
-      string("around"),
-      string("evenly"),
-      string("stretch"),
-      string("baseline")
-    ])
+    |> parsec(:scale_align_primary_axis)
     |> tag(:place_content)
 
   place_items =
     string("place-items-")
-    |> choice([
-      string("start"),
-      string("end"),
-      string("center"),
-      string("stretch"),
-      string("baseline")
-    ])
+    |> choice([string("baseline"), parsec(:scale_align_secondary_axis)])
     |> tag(:place_items)
 
   place_self =
     string("place-self-")
-    |> choice([
-      string("auto"),
-      string("start"),
-      string("end"),
-      string("center"),
-      string("stretch")
-    ])
+    |> choice([string("auto"), parsec(:scale_align_secondary_axis)])
     |> tag(:place_self)
 
   gap =
@@ -2416,32 +2401,32 @@ defmodule TailwindMerge.Parser do
     |> tag(:m)
 
   mx =
-  parsec(:maybe_negative)
-      |> string("mx-")
+    parsec(:maybe_negative)
+    |> string("mx-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mx)
 
   my =
-  parsec(:maybe_negative)
-      |> string("my-")
+    parsec(:maybe_negative)
+    |> string("my-")
     |> concat(parsec(:spacing_scale))
     |> tag(:my)
 
   ms =
-  parsec(:maybe_negative)
-      |> string("ms-")
+    parsec(:maybe_negative)
+    |> string("ms-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ms)
 
   me =
-  parsec(:maybe_negative)
-      |> string("me-")
+    parsec(:maybe_negative)
+    |> string("me-")
     |> concat(parsec(:spacing_scale))
     |> tag(:me)
 
   mt =
-  parsec(:maybe_negative)
-      |> string("mt-")
+    parsec(:maybe_negative)
+    |> string("mt-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mt)
 
@@ -2507,10 +2492,19 @@ defmodule TailwindMerge.Parser do
     |> concat(parsec(:sizing_scale))
     |> tag(:size)
 
+  wrap =
+    string("wrap-")
+    |> choice([
+      string("break-word"),
+      string("anywhere"),
+      string("normal")
+    ])
+    |> tag(:wrap)
+
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
   regular_modifier =
-    ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
+    ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/, ?@, ?(, ?)], min: 1)
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:regular_modifier)
 
@@ -2627,6 +2621,7 @@ defmodule TailwindMerge.Parser do
       grow,
       mix_blend,
       text_decoration,
+      wrap,
       custom
     ])
 
