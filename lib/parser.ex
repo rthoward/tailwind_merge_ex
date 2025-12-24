@@ -2139,6 +2139,11 @@ defmodule TailwindMerge.Parser do
     |> concat(parsec(:spacing_scale))
     |> tag(:gap_y)
 
+  basis =
+    string("basis-")
+    |> concat(spacing_scale)
+    |> tag(:basis)
+
   grid_cols =
     string("grid-cols-")
     |> choice([
@@ -2553,7 +2558,7 @@ defmodule TailwindMerge.Parser do
       scale_x, scale_y, scale, rotate, skew_x, skew_y, translate_x, translate_y, translate_none, transform_origin,
       perspective, perspective_origin,
       transition, duration, ease, delay, animate,
-      flex_direction, flex_wrap, flex,
+      flex_direction, flex_wrap, flex, basis,
       justify_items, justify_self, justify_content,
       align_items, align_self, align_content,
       place_content, place_items, place_self,
