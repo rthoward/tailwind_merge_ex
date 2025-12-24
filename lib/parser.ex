@@ -2312,6 +2312,11 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration)
 
+  text_shadow =
+    string("text-shadow-")
+    |> choice([string("none"), shadow])
+    |> tag(:text_shadow)
+
   overflow_value =
     choice([
       string("auto"),
@@ -2587,6 +2592,7 @@ defmodule TailwindMerge.Parser do
       tracking,
       line_clamp,
       leading,
+      text_shadow,
       list_image, list_style_position, list_style_type,
       text_decoration_color, text_decoration_thickness, text_decoration_style,
       underline_offset,
