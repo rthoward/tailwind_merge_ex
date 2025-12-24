@@ -16,6 +16,10 @@ defmodule TailwindMerge.Parser do
 
   percentage = integer(min: 1, max: 3) |> string("%")
 
+  maybe_negative = optional(string("-"))
+
+  defparsec :maybe_negative, maybe_negative
+
   #
   # Units
   #
@@ -1578,32 +1582,38 @@ defmodule TailwindMerge.Parser do
     |> tag(:inset_y)
 
   start =
-    string("start-")
+    parsec(:maybe_negative)
+    |> string("start-")
     |> concat(parsec(:spacing_scale))
     |> tag(:start)
 
   end_position =
-    string("end-")
+    parsec(:maybe_negative)
+    |> string("end-")
     |> concat(parsec(:spacing_scale))
     |> tag(:end)
 
   top =
-    string("top-")
+    parsec(:maybe_negative)
+    |> string("top-")
     |> concat(parsec(:spacing_scale))
     |> tag(:top)
 
   right =
-    string("right-")
+    parsec(:maybe_negative)
+    |> string("right-")
     |> concat(parsec(:spacing_scale))
     |> tag(:right)
 
   bottom =
-    string("bottom-")
+    parsec(:maybe_negative)
+    |> string("bottom-")
     |> concat(parsec(:spacing_scale))
     |> tag(:bottom)
 
   left =
-    string("left-")
+    parsec(:maybe_negative)
+    |> string("left-")
     |> concat(parsec(:spacing_scale))
     |> tag(:left)
 
@@ -2347,92 +2357,110 @@ defmodule TailwindMerge.Parser do
   #
 
   p =
-    string("p-")
+    parsec(:maybe_negative)
+    |> string("p-")
     |> concat(parsec(:spacing_scale))
     |> tag(:p)
 
   px =
-    string("px-")
+    parsec(:maybe_negative)
+    |> string("px-")
     |> concat(parsec(:spacing_scale))
     |> tag(:px)
 
   py =
-    string("py-")
+    parsec(:maybe_negative)
+    |> string("py-")
     |> concat(parsec(:spacing_scale))
     |> tag(:py)
 
   ps =
-    string("ps-")
+    parsec(:maybe_negative)
+    |> string("ps-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ps)
 
   pe =
-    string("pe-")
+    parsec(:maybe_negative)
+    |> string("pe-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pe)
 
   pt =
-    string("pt-")
+    parsec(:maybe_negative)
+    |> string("pt-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pt)
 
   pr =
-    string("pr-")
+    parsec(:maybe_negative)
+    |> string("pr-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pr)
 
   pb =
-    string("pb-")
+    parsec(:maybe_negative)
+    |> string("pb-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pb)
 
   pl =
-    string("pl-")
+    parsec(:maybe_negative)
+    |> string("pl-")
     |> concat(parsec(:spacing_scale))
     |> tag(:pl)
 
   m =
-    string("m-")
+    parsec(:maybe_negative)
+    |> string("m-")
     |> concat(parsec(:spacing_scale))
     |> tag(:m)
 
   mx =
-    string("mx-")
+  parsec(:maybe_negative)
+      |> string("mx-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mx)
 
   my =
-    string("my-")
+  parsec(:maybe_negative)
+      |> string("my-")
     |> concat(parsec(:spacing_scale))
     |> tag(:my)
 
   ms =
-    string("ms-")
+  parsec(:maybe_negative)
+      |> string("ms-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ms)
 
   me =
-    string("me-")
+  parsec(:maybe_negative)
+      |> string("me-")
     |> concat(parsec(:spacing_scale))
     |> tag(:me)
 
   mt =
-    string("mt-")
+  parsec(:maybe_negative)
+      |> string("mt-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mt)
 
   mr =
-    string("mr-")
+    parsec(:maybe_negative)
+    |> string("mr-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mr)
 
   mb =
-    string("mb-")
+    parsec(:maybe_negative)
+    |> string("mb-")
     |> concat(parsec(:spacing_scale))
     |> tag(:mb)
 
   ml =
-    string("ml-")
+    parsec(:maybe_negative)
+    |>string("ml-")
     |> concat(parsec(:spacing_scale))
     |> tag(:ml)
 
