@@ -8,5 +8,8 @@ defmodule TailwindMerge.ParsedTest do
 
     assert %Parsed{group: :m} = Parsed.new("m-2")
     assert %Parsed{group: :m} = Parsed.new("-m-2")
+
+    assert %Parsed{group: :font_size} = Parsed.new("text-[0.5px]")
+    assert %Parsed{group: :text_color} = Parsed.new("text-(--my-0)")
   end
 end

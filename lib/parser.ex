@@ -114,14 +114,7 @@ defmodule TailwindMerge.Parser do
 
   arbitrary_variable =
     ascii_char([?(])
-    |> optional(
-      ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 1)
-      |> string(":")
-    )
-    |> repeat(
-      lookahead_not(ascii_char([?)]))
-      |> utf8_char([])
-    )
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
     |> ascii_char([?)])
 
   defcombinatorp(:arbitrary_variable, arbitrary_variable)
@@ -267,7 +260,7 @@ defmodule TailwindMerge.Parser do
 
   text_color =
     string("text-")
-    |> choice([parsec(:color_value), arbitrary_color_value])
+    |> choice([parsec(:color_value), arbitrary_color_value, arbitrary_variable])
     |> tag(:text_color)
 
   border_color =
