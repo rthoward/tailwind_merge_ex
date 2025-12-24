@@ -2257,7 +2257,8 @@ defmodule TailwindMerge.Parser do
     string("stroke-")
     |> choice([
       integer_value,
-      parsec(:arbitrary_length)
+      parsec(:arbitrary_length),
+      parsec(:arbitrary_value)
     ])
     |> tag(:stroke_width)
 
