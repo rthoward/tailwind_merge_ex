@@ -36,7 +36,7 @@ defmodule TailwindMerge.Parsed do
           [[modifier] ++ current_segment | rest]
 
         {:arbitrary_modifier, modifier}, [current_segment | rest] ->
-          [[modifier] | Enum.sort(current_segment) ++ rest]
+          [[modifier] | [Enum.sort(current_segment) ++ rest]]
       end
     )
     |> Enum.flat_map(&Enum.sort/1)
