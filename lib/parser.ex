@@ -2510,18 +2510,18 @@ defmodule TailwindMerge.Parser do
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
   regular_modifier =
-    ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/, ?@, ?(, ?)], min: 1)
+    ascii_string([?a..?z, ?A..?Z], min: 1)
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:regular_modifier)
 
   arbitrary_modifier =
     ignore(ascii_char([?[]))
-    |> ascii_string([?!..?Z, ?/, ?^..?z], min: 1)
+    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/, ?@, ?(, ?), ?{, ?}, ?:], min: 1)
     |> ignore(ascii_char([?]]))
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:arbitrary_modifier)
 
-  modifiers = choice([regular_modifier, arbitrary_modifier]) |> repeat()
+  modifiers = choice([arbitrary_modifier, regular_modifier]) |> repeat()
 
   class =
     choice([
