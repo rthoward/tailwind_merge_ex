@@ -93,7 +93,7 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?/], min: 0)
     |> string(")")
 
-  arbitrary_value =
+  arbitrary_val =
     ascii_char([?[])
     |> optional(
       ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 1)
@@ -105,7 +105,7 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?]])
 
-  arbitrary_variable =
+  arbitrary_var =
     ascii_char([?(])
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
     |> ascii_char([?)])
@@ -127,22 +127,17 @@ defmodule TailwindMerge.Parser do
   # Common values
   #
 
-  none = string("none")
-  auto = string("auto")
-  full = string("full")
-
   spacing_scale =
     choice([
-      auto,
-      full,
+      string("auto"),
+      string("full"),
       string("px"),
-      decimal,
+      parsec(:decimal),
       integer(min: 1),
-      string("0"),
-      fraction,
+      parsec(:fraction),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
 
   scale_align_primary_axis =
@@ -188,16 +183,16 @@ defmodule TailwindMerge.Parser do
       string("max"),
       string("fit"),
       string("lh"),
-      auto,
-      full,
+      string("auto"),
+      string("full"),
       string("px"),
-      decimal,
+      parsec(:decimal),
       integer(min: 1),
       string("0"),
-      fraction,
+      parsec(:fraction),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
 
   #
@@ -215,8 +210,8 @@ defmodule TailwindMerge.Parser do
       |> choice([
         string("0"),
         integer(min: 1, max: 100),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     )
 
@@ -252,7 +247,7 @@ defmodule TailwindMerge.Parser do
     ])
 
 
-  arbitrary_color_value =
+  arbitrary_color_val =
     ascii_char([?[])
     |> parsec(:color_value)
     |> ascii_char([?]])
@@ -264,7 +259,7 @@ defmodule TailwindMerge.Parser do
 
   text_color =
     string("text-")
-    |> choice([parsec(:color_value), arbitrary_color_value, arbitrary_variable])
+    |> choice([parsec(:color_value), parsec(:arbitrary_color_val), parsec(:arbitrary_var)])
     |> tag(:text_color)
 
   border_color =
@@ -304,8 +299,8 @@ defmodule TailwindMerge.Parser do
       string("45"),
       string("90"),
       string("180"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:rotate)
 
@@ -325,8 +320,8 @@ defmodule TailwindMerge.Parser do
         string("110"),
         string("125"),
         string("150"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:scale)
@@ -344,8 +339,8 @@ defmodule TailwindMerge.Parser do
       string("110"),
       string("125"),
       string("150"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:scale_x)
 
@@ -362,8 +357,8 @@ defmodule TailwindMerge.Parser do
       string("110"),
       string("125"),
       string("150"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:scale_y)
 
@@ -376,8 +371,8 @@ defmodule TailwindMerge.Parser do
       string("3"),
       string("6"),
       string("12"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:skew_x)
 
@@ -390,8 +385,8 @@ defmodule TailwindMerge.Parser do
       string("3"),
       string("6"),
       string("12"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:skew_y)
 
@@ -422,8 +417,8 @@ defmodule TailwindMerge.Parser do
       string("bottom"),
       string("right"),
       string("left"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:transform_origin)
 
@@ -432,8 +427,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("none"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:perspective)
 
@@ -449,8 +444,8 @@ defmodule TailwindMerge.Parser do
       string("bottom"),
       string("right"),
       string("left"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:perspective_origin)
 
@@ -470,8 +465,8 @@ defmodule TailwindMerge.Parser do
         string("opacity"),
         string("shadow"),
         string("transform"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:transition)
@@ -488,8 +483,8 @@ defmodule TailwindMerge.Parser do
       string("500"),
       string("700"),
       string("1000"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:duration)
 
@@ -500,8 +495,8 @@ defmodule TailwindMerge.Parser do
       string("in-out"),
       string("in"),
       string("out"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:ease)
 
@@ -517,8 +512,8 @@ defmodule TailwindMerge.Parser do
       string("500"),
       string("700"),
       string("1000"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:delay)
 
@@ -530,8 +525,8 @@ defmodule TailwindMerge.Parser do
       string("ping"),
       string("pulse"),
       string("bounce"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:animate)
 
@@ -624,8 +619,8 @@ defmodule TailwindMerge.Parser do
       string("nwse-resize"),
       string("zoom-in"),
       string("zoom-out"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:cursor)
 
@@ -752,13 +747,13 @@ defmodule TailwindMerge.Parser do
       string("scroll"),
       string("contents"),
       string("transform"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:will_change)
 
   # SVG
-  fill = string("fill-") |> choice([none, parsec(:color_value)]) |> tag(:fill)
+  fill = string("fill-") |> choice([string("none"), parsec(:color_value)]) |> tag(:fill)
 
   #
   # Visual effects
@@ -803,8 +798,8 @@ defmodule TailwindMerge.Parser do
       string("right-top"),
       string("right"),
       string("top"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:bg_position)
 
@@ -828,8 +823,8 @@ defmodule TailwindMerge.Parser do
       string("cover"),
       string("contain"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:bg_size)
 
@@ -845,24 +840,24 @@ defmodule TailwindMerge.Parser do
       string("gradient-to-bl"),
       string("gradient-to-l"),
       string("gradient-to-tl"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:bg_image)
 
   gradient_from_pos =
     string("from-")
-    |> choice([percentage, parsec(:arbitrary_value)])
+    |> choice([percentage, parsec(:arbitrary_val)])
     |> tag(:gradient_from_pos)
 
   gradient_via_pos =
     string("via-")
-    |> choice([percentage, parsec(:arbitrary_value)])
+    |> choice([percentage, parsec(:arbitrary_val)])
     |> tag(:gradient_via_pos)
 
   gradient_to_pos =
     string("to-")
-    |> choice([percentage, parsec(:arbitrary_value)])
+    |> choice([percentage, parsec(:arbitrary_val)])
     |> tag(:gradient_to_pos)
 
   gradient_from = string("from-") |> parsec(:color_value) |> tag(:gradient_from)
@@ -885,8 +880,8 @@ defmodule TailwindMerge.Parser do
         string("3xl"),
         string("full"),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:rounded)
@@ -911,7 +906,7 @@ defmodule TailwindMerge.Parser do
       string("-") |> concat(side) |> optional(string("-") |> integer(min: 1)),
       integer(min: 1),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_var)
     ])
     |> tag(:border_w)
 
@@ -940,8 +935,8 @@ defmodule TailwindMerge.Parser do
         string("8"),
         string("reverse"),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:divide_x)
@@ -958,8 +953,8 @@ defmodule TailwindMerge.Parser do
         string("8"),
         string("reverse"),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:divide_y)
@@ -1002,8 +997,8 @@ defmodule TailwindMerge.Parser do
       string("4"),
       string("8"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:outline_w)
 
@@ -1016,8 +1011,8 @@ defmodule TailwindMerge.Parser do
       string("4"),
       string("8"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:outline_offset)
 
@@ -1036,8 +1031,8 @@ defmodule TailwindMerge.Parser do
         string("none"),
         string("inner"),
         parsec(:tshirt),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:shadow)
@@ -1051,8 +1046,8 @@ defmodule TailwindMerge.Parser do
     string("opacity-")
     |> choice([
       integer(min: 1, max: 3),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:opacity)
 
@@ -1076,8 +1071,8 @@ defmodule TailwindMerge.Parser do
         string("2xl"),
         string("3xl"),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:blur)
@@ -1086,8 +1081,8 @@ defmodule TailwindMerge.Parser do
     string("brightness-")
     |> choice([
       integer(min: 1, max: 3),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:brightness)
 
@@ -1101,8 +1096,8 @@ defmodule TailwindMerge.Parser do
       string("125"),
       string("150"),
       string("200"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:contrast)
 
@@ -1118,8 +1113,8 @@ defmodule TailwindMerge.Parser do
         string("lg"),
         string("xl"),
         string("2xl"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:drop_shadow)
@@ -1133,8 +1128,8 @@ defmodule TailwindMerge.Parser do
       string("60"),
       string("90"),
       string("180"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:hue_rotate)
 
@@ -1145,8 +1140,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("0"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:invert)
@@ -1159,8 +1154,8 @@ defmodule TailwindMerge.Parser do
       string("100"),
       string("150"),
       string("200"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:saturate)
 
@@ -1171,8 +1166,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("0"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:sepia)
@@ -1191,8 +1186,8 @@ defmodule TailwindMerge.Parser do
         string("2xl"),
         string("3xl"),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:backdrop_blur)
@@ -1211,8 +1206,8 @@ defmodule TailwindMerge.Parser do
       string("125"),
       string("150"),
       string("200"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:backdrop_brightness)
 
@@ -1226,8 +1221,8 @@ defmodule TailwindMerge.Parser do
       string("125"),
       string("150"),
       string("200"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:backdrop_contrast)
 
@@ -1238,8 +1233,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("0"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:backdrop_grayscale)
@@ -1253,8 +1248,8 @@ defmodule TailwindMerge.Parser do
       string("60"),
       string("90"),
       string("180"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:backdrop_hue_rotate)
 
@@ -1265,8 +1260,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("0"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:backdrop_invert)
@@ -1275,8 +1270,8 @@ defmodule TailwindMerge.Parser do
     string("backdrop-opacity-")
     |> choice([
       integer(min: 1, max: 3),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:backdrop_opacity)
 
@@ -1288,8 +1283,8 @@ defmodule TailwindMerge.Parser do
       string("100"),
       string("150"),
       string("200"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:backdrop_saturate)
 
@@ -1300,8 +1295,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("0"),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:backdrop_sepia)
@@ -1316,9 +1311,9 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       string("square"),
       string("video"),
-      fraction,
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:fraction),
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:aspect)
 
@@ -1333,8 +1328,8 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       integer(min: 1, max: 12),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:columns)
 
@@ -1450,8 +1445,8 @@ defmodule TailwindMerge.Parser do
       string("right-top"),
       string("right"),
       string("top"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:object_position)
 
@@ -1532,8 +1527,8 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       integer(min: 1, max: 50),
       string("0"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:z)
 
@@ -1558,7 +1553,7 @@ defmodule TailwindMerge.Parser do
       string("8xl"),
       string("9xl"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_var)
     ])
     |> tag(:font_size)
 
@@ -1590,8 +1585,8 @@ defmodule TailwindMerge.Parser do
       string("bold"),
       string("extrabold"),
       string("black"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:font_weight)
 
@@ -1601,8 +1596,8 @@ defmodule TailwindMerge.Parser do
       string("sans"),
       string("serif"),
       string("mono"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:font_family)
 
@@ -1656,8 +1651,8 @@ defmodule TailwindMerge.Parser do
       string("wider"),
       string("widest"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:tracking)
 
@@ -1666,8 +1661,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("none"),
       integer(min: 1, max: 6),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:line_clamp)
 
@@ -1682,8 +1677,8 @@ defmodule TailwindMerge.Parser do
       string("loose"),
       integer(min: 1, max: 10),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:leading)
 
@@ -1691,8 +1686,8 @@ defmodule TailwindMerge.Parser do
     string("list-image-")
     |> choice([
       string("none"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:list_image)
 
@@ -1747,8 +1742,8 @@ defmodule TailwindMerge.Parser do
       string("4"),
       string("8"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:text_decoration_thickness)
 
@@ -1767,8 +1762,8 @@ defmodule TailwindMerge.Parser do
       string("4"),
       string("8"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:underline_offset)
 
@@ -1818,8 +1813,8 @@ defmodule TailwindMerge.Parser do
       string("sub"),
       string("super"),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:vertical_align)
 
@@ -1858,8 +1853,8 @@ defmodule TailwindMerge.Parser do
     string("content-")
     |> choice([
       string("none"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:content)
 
@@ -1901,8 +1896,8 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       string("initial"),
       string("none"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:flex)
 
@@ -2020,8 +2015,8 @@ defmodule TailwindMerge.Parser do
       string("subgrid"),
       string("none"),
       integer(min: 1, max: 12),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:grid_cols)
 
@@ -2031,8 +2026,8 @@ defmodule TailwindMerge.Parser do
       string("full"),
       string("auto"),
       integer(min: 1, max: 12),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:col_start_end)
 
@@ -2041,8 +2036,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 13),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:col_start)
 
@@ -2051,8 +2046,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 13),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:col_end)
 
@@ -2062,8 +2057,8 @@ defmodule TailwindMerge.Parser do
       string("subgrid"),
       string("none"),
       integer(min: 1, max: 6),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:grid_rows)
 
@@ -2073,8 +2068,8 @@ defmodule TailwindMerge.Parser do
       string("full"),
       string("auto"),
       integer(min: 1, max: 6),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:row_start_end)
 
@@ -2083,8 +2078,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 7),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:row_start)
 
@@ -2093,8 +2088,8 @@ defmodule TailwindMerge.Parser do
     |> choice([
       string("auto"),
       integer(min: 1, max: 7),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:row_end)
 
@@ -2116,8 +2111,8 @@ defmodule TailwindMerge.Parser do
       string("min"),
       string("max"),
       string("fr"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:auto_cols)
 
@@ -2128,8 +2123,8 @@ defmodule TailwindMerge.Parser do
       string("min"),
       string("max"),
       string("fr"),
-      parsec(:arbitrary_value),
-      parsec(:arbitrary_variable)
+      parsec(:arbitrary_val),
+      parsec(:arbitrary_var)
     ])
     |> tag(:auto_rows)
 
@@ -2143,13 +2138,13 @@ defmodule TailwindMerge.Parser do
     |> choice([
       integer(min: 1),
       parsec(:arbitrary_length),
-      parsec(:arbitrary_value)
+      parsec(:arbitrary_val)
     ])
     |> tag(:stroke_width)
 
   stroke =
     string("stroke-")
-    |> choice([none, arbitrary_color_value])
+    |> choice([string("none"), parsec(:arbitrary_color_val)])
     |> tag(:stroke)
 
   grayscale =
@@ -2160,8 +2155,8 @@ defmodule TailwindMerge.Parser do
       |> choice([
         integer(min: 1),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:grayscale)
@@ -2174,8 +2169,8 @@ defmodule TailwindMerge.Parser do
       |> choice([
         integer(min: 1),
         parsec(:arbitrary_length),
-        parsec(:arbitrary_value),
-        parsec(:arbitrary_variable)
+        parsec(:arbitrary_val),
+        parsec(:arbitrary_var)
       ])
     ])
     |> tag(:grow)
@@ -2521,10 +2516,14 @@ defmodule TailwindMerge.Parser do
       custom
     ])
 
-  defcombinatorp :arbitrary_color_value, arbitrary_color_value
+  defcombinatorp :decimal, decimal
+  defcombinatorp :fraction, fraction
+  defcombinatorp :number, number
+
+  defcombinatorp :arbitrary_color_val, arbitrary_color_val
   defcombinatorp :arbitrary_length, arbitrary_length
-  defcombinatorp :arbitrary_value, arbitrary_value
-  defcombinatorp :arbitrary_variable, arbitrary_variable
+  defcombinatorp :arbitrary_val, arbitrary_val
+  defcombinatorp :arbitrary_var, arbitrary_var
   defcombinatorp :color_function, color_function
   defcombinatorp :color_value, color_value
   defcombinatorp :css_function, css_function
