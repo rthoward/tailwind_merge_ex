@@ -69,6 +69,22 @@ defmodule TailwindMerge.Parser do
       string("b")
     ])
 
+  tshirt =
+    choice([
+      string("xs"),
+      string("md"),
+      string("lg"),
+      string("xl"),
+      string("2xl"),
+      string("3xl"),
+      string("4xl"),
+      string("5xl"),
+      string("6xl"),
+      string("7xl"),
+      string("8xl"),
+      string("9xl"),
+    ])
+
   # Any CSS unit
   any_unit =
     choice([container_unit, viewport_unit, font_unit, basic_unit])
@@ -1139,12 +1155,8 @@ defmodule TailwindMerge.Parser do
       string("-")
       |> choice([
         string("none"),
-        string("sm"),
-        string("md"),
-        string("lg"),
-        string("xl"),
-        string("2xl"),
         string("inner"),
+        parsec(:tshirt),
         parsec(:arbitrary_value),
         parsec(:arbitrary_variable)
       ])
