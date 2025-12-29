@@ -122,14 +122,11 @@ defmodule TailwindMerge.Parser do
     )
     |> ascii_char([?]])
 
-  defcombinatorp(:arbitrary_value, arbitrary_value)
-
   arbitrary_variable =
     ascii_char([?(])
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
     |> ascii_char([?)])
 
-  defcombinatorp(:arbitrary_variable, arbitrary_variable)
 
   #
   # Length
@@ -191,9 +188,6 @@ defmodule TailwindMerge.Parser do
       string("stretch")
     ])
 
-  defcombinatorp(:spacing_scale, spacing_scale)
-  defcombinatorp(:scale_align_primary_axis, scale_align_primary_axis)
-  defcombinatorp(:scale_align_secondary_axis, scale_align_secondary_axis)
 
   # ===== Sizing Values =====
   # Combines spacing scale with additional sizing keywords
@@ -228,8 +222,6 @@ defmodule TailwindMerge.Parser do
       parsec(:arbitrary_value),
       parsec(:arbitrary_variable)
     ])
-
-  defcombinatorp(:sizing_scale, sizing_scale)
 
   #
   # Color
@@ -282,7 +274,6 @@ defmodule TailwindMerge.Parser do
       named_color
     ])
 
-  defcombinatorp(:color_value, color_value)
 
   arbitrary_color_value =
     ascii_char([?[])
@@ -2642,13 +2633,20 @@ defmodule TailwindMerge.Parser do
       custom
     ])
 
+  defcombinatorp :arbitrary_color_value, arbitrary_color_value
+  defcombinatorp :arbitrary_length, arbitrary_length
+  defcombinatorp :arbitrary_value, arbitrary_value
+  defcombinatorp :arbitrary_variable, arbitrary_variable
+  defcombinatorp :color_function, color_function
+  defcombinatorp :color_value, color_value
+  defcombinatorp :css_function, css_function
+  defcombinatorp :maybe_negative, maybe_negative
+  defcombinatorp :scale_align_primary_axis, scale_align_primary_axis
+  defcombinatorp :scale_align_secondary_axis, scale_align_secondary_axis
+  defcombinatorp :sizing_scale, sizing_scale
+  defcombinatorp :spacing_scale, spacing_scale
+  defcombinatorp :tshirt, tshirt
+
   defparsec :class, class
   defparsec :modifiers, modifiers
-  defparsec :arbitrary_color_value, arbitrary_color_value
-
-  defparsec :maybe_negative, maybe_negative
-  defparsec :css_function, css_function
-  defparsec :arbitrary_length, arbitrary_length
-  defparsec :color_function, color_function
-  defparsec :tshirt, tshirt
 end
