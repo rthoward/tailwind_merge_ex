@@ -1,21 +1,10 @@
 defmodule TailwindMerge.Parser do
   import NimbleParsec
 
-  integer_value = integer(min: 1)
-
-  number_value =
-    integer(min: 1)
-    |> optional(string(".") |> integer(min: 1))
-
-  fraction =
-    integer(min: 1)
-    |> string("/")
-    |> integer(min: 1)
-
+  number = integer(min: 1) |> optional(string(".") |> integer(min: 1))
+  fraction = integer(min: 1) |> string("/") |> integer(min: 1)
   decimal = integer(min: 1, max: 3) |> string(".") |> integer(min: 1)
-
   percentage = integer(min: 1, max: 3) |> string("%")
-
   maybe_negative = optional(string("-"))
 
   #
@@ -85,14 +74,8 @@ defmodule TailwindMerge.Parser do
       string("9xl"),
     ])
 
-  # Any CSS unit
-  any_unit =
-    choice([container_unit, viewport_unit, font_unit, basic_unit])
-
-  # Number + unit (e.g., "10px", "2rem", "50%", "100vh")
-  length_with_unit =
-    number_value
-    |> concat(any_unit)
+  any_unit = choice([container_unit, viewport_unit, font_unit, basic_unit])
+  length_with_unit = number |> concat(any_unit)
 
   css_function =
     choice([
@@ -127,7 +110,6 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
     |> ascii_char([?)])
 
-
   #
   # Length
   #
@@ -140,7 +122,6 @@ defmodule TailwindMerge.Parser do
     ascii_char([?[])
     |> choice([css_function, length_variable, length_with_unit, string("0")])
     |> ascii_char([?]])
-
 
   #
   # Common values
@@ -187,10 +168,6 @@ defmodule TailwindMerge.Parser do
       string("center"),
       string("stretch")
     ])
-
-
-  # ===== Sizing Values =====
-  # Combines spacing scale with additional sizing keywords
 
   sizing_scale =
     choice([
@@ -282,7 +259,7 @@ defmodule TailwindMerge.Parser do
 
   bg =
     string("bg-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:bg)
 
   text_color =
@@ -292,7 +269,7 @@ defmodule TailwindMerge.Parser do
 
   border_color =
     string("border-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:border_color)
 
   blend_mode =
@@ -420,12 +397,12 @@ defmodule TailwindMerge.Parser do
 
   translate_x =
     string("translate-x-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:translate_x)
 
   translate_y =
     string("translate-y-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:translate_y)
 
   translate_none =
@@ -477,7 +454,10 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:perspective_origin)
 
-  # Transitions & Animations
+  #
+  # Animation
+  #
+
   transition =
     string("transition")
     |> choice([
@@ -555,7 +535,10 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:animate)
 
+  #
   # Tables
+  #
+
   border_collapse =
     string("border-")
     |> choice([
@@ -567,17 +550,17 @@ defmodule TailwindMerge.Parser do
 
   border_spacing =
     string("border-spacing-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:border_spacing)
 
   border_spacing_x =
     string("border-spacing-x-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:border_spacing_x)
 
   border_spacing_y =
     string("border-spacing-y-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:border_spacing_y)
 
   table_layout =
@@ -598,7 +581,10 @@ defmodule TailwindMerge.Parser do
     |> eos()
     |> tag(:caption)
 
+  #
   # Interactivity
+  #
+
   cursor =
     string("cursor-")
     |> choice([
@@ -645,10 +631,7 @@ defmodule TailwindMerge.Parser do
 
   pointer_events =
     string("pointer-events-")
-    |> choice([
-      string("none"),
-      string("auto")
-    ])
+    |> choice([string("none"), string("auto")])
     |> eos()
     |> tag(:pointer_events)
 
@@ -667,102 +650,28 @@ defmodule TailwindMerge.Parser do
 
   scroll_behavior =
     string("scroll-")
-    |> choice([
-      string("auto"),
-      string("smooth")
-    ])
+    |> choice([string("auto"), string("smooth")])
     |> eos()
     |> tag(:scroll_behavior)
 
-  scroll_m =
-    string("scroll-m-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_m)
-
-  scroll_mx =
-    string("scroll-mx-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_mx)
-
-  scroll_my =
-    string("scroll-my-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_my)
-
-  scroll_ms =
-    string("scroll-ms-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_ms)
-
-  scroll_me =
-    string("scroll-me-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_me)
-
-  scroll_mt =
-    string("scroll-mt-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_mt)
-
-  scroll_mr =
-    string("scroll-mr-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_mr)
-
-  scroll_mb =
-    string("scroll-mb-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_mb)
-
-  scroll_ml =
-    string("scroll-ml-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_ml)
-
-  scroll_p =
-    string("scroll-p-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_p)
-
-  scroll_px =
-    string("scroll-px-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_px)
-
-  scroll_py =
-    string("scroll-py-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_py)
-
-  scroll_ps =
-    string("scroll-ps-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_ps)
-
-  scroll_pe =
-    string("scroll-pe-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_pe)
-
-  scroll_pt =
-    string("scroll-pt-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_pt)
-
-  scroll_pr =
-    string("scroll-pr-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_pr)
-
-  scroll_pb =
-    string("scroll-pb-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_pb)
-
-  scroll_pl =
-    string("scroll-pl-")
-    |> concat(parsec(:spacing_scale))
-    |> tag(:scroll_pl)
+  scroll_m = string("scroll-m-") |> parsec(:spacing_scale) |> tag(:scroll_m)
+  scroll_mx = string("scroll-mx-") |> parsec(:spacing_scale) |> tag(:scroll_mx)
+  scroll_my = string("scroll-my-") |> parsec(:spacing_scale) |> tag(:scroll_my)
+  scroll_ms = string("scroll-ms-") |> parsec(:spacing_scale) |> tag(:scroll_ms)
+  scroll_me = string("scroll-me-") |> parsec(:spacing_scale) |> tag(:scroll_me)
+  scroll_mt = string("scroll-mt-") |> parsec(:spacing_scale) |> tag(:scroll_mt)
+  scroll_mr = string("scroll-mr-") |> parsec(:spacing_scale) |> tag(:scroll_mr)
+  scroll_mb = string("scroll-mb-") |> parsec(:spacing_scale) |> tag(:scroll_mb)
+  scroll_ml = string("scroll-ml-") |> parsec(:spacing_scale) |> tag(:scroll_ml)
+  scroll_p = string("scroll-p-") |> parsec(:spacing_scale) |> tag(:scroll_p)
+  scroll_px = string("scroll-px-") |> parsec(:spacing_scale) |> tag(:scroll_px)
+  scroll_py = string("scroll-py-") |> parsec(:spacing_scale) |> tag(:scroll_py)
+  scroll_ps = string("scroll-ps-") |> parsec(:spacing_scale) |> tag(:scroll_ps)
+  scroll_pe = string("scroll-pe-") |> parsec(:spacing_scale) |> tag(:scroll_pe)
+  scroll_pt = string("scroll-pt-") |> parsec(:spacing_scale) |> tag(:scroll_pt)
+  scroll_pr = string("scroll-pr-") |> parsec(:spacing_scale) |> tag(:scroll_pr)
+  scroll_pb = string("scroll-pb-") |> parsec(:spacing_scale) |> tag(:scroll_pb)
+  scroll_pl = string("scroll-pl-") |> parsec(:spacing_scale) |> tag(:scroll_pl)
 
   snap_align =
     string("snap-")
@@ -849,13 +758,7 @@ defmodule TailwindMerge.Parser do
     |> tag(:will_change)
 
   # SVG
-  fill =
-    string("fill-")
-    |> choice([
-      none,
-      parsec(:color_value)
-    ])
-    |> tag(:fill)
+  fill = string("fill-") |> choice([none, parsec(:color_value)]) |> tag(:fill)
 
   #
   # Visual effects
@@ -863,11 +766,7 @@ defmodule TailwindMerge.Parser do
 
   bg_attachment =
     string("bg-")
-    |> choice([
-      string("fixed"),
-      string("local"),
-      string("scroll")
-    ])
+    |> choice([string("fixed"), string("local"), string("scroll")])
     |> eos()
     |> tag(:bg_attachment)
 
@@ -966,20 +865,9 @@ defmodule TailwindMerge.Parser do
     |> choice([percentage, parsec(:arbitrary_value)])
     |> tag(:gradient_to_pos)
 
-  gradient_from =
-    string("from-")
-    |> concat(parsec(:color_value))
-    |> tag(:gradient_from)
-
-  gradient_via =
-    string("via-")
-    |> concat(parsec(:color_value))
-    |> tag(:gradient_via)
-
-  gradient_to =
-    string("to-")
-    |> concat(parsec(:color_value))
-    |> tag(:gradient_to)
+  gradient_from = string("from-") |> parsec(:color_value) |> tag(:gradient_from)
+  gradient_via = string("via-") |> parsec(:color_value) |> tag(:gradient_via)
+  gradient_to = string("to-") |> parsec(:color_value) |> tag(:gradient_to)
 
   # Borders & Outlines
   rounded =
@@ -1090,7 +978,7 @@ defmodule TailwindMerge.Parser do
 
   divide_color =
     string("divide-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:divide_color)
 
   outline_style =
@@ -1135,7 +1023,7 @@ defmodule TailwindMerge.Parser do
 
   outline_color =
     string("outline-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:outline_color)
 
   # Effects
@@ -1156,7 +1044,7 @@ defmodule TailwindMerge.Parser do
 
   shadow_color =
     string("shadow-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:shadow_color)
 
   opacity =
@@ -1580,53 +1468,53 @@ defmodule TailwindMerge.Parser do
 
   inset =
     string("inset-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:inset)
 
   inset_x =
     string("inset-x-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:inset_x)
 
   inset_y =
     string("inset-y-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:inset_y)
 
   start =
     parsec(:maybe_negative)
     |> string("start-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:start)
 
   end_position =
     parsec(:maybe_negative)
     |> string("end-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:end)
 
   top =
     parsec(:maybe_negative)
     |> string("top-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:top)
 
   right =
     parsec(:maybe_negative)
     |> string("right-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:right)
 
   bottom =
     parsec(:maybe_negative)
     |> string("bottom-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:bottom)
 
   left =
     parsec(:maybe_negative)
     |> string("left-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:left)
 
   visibility =
@@ -1866,7 +1754,7 @@ defmodule TailwindMerge.Parser do
 
   text_decoration_color =
     string("decoration-")
-    |> concat(parsec(:color_value))
+    |> parsec(:color_value)
     |> tag(:text_decoration_color)
 
   underline_offset =
@@ -1915,7 +1803,7 @@ defmodule TailwindMerge.Parser do
 
   indent =
     string("indent-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:indent)
 
   vertical_align =
@@ -2108,17 +1996,17 @@ defmodule TailwindMerge.Parser do
 
   gap =
     string("gap-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:gap)
 
   gap_x =
     string("gap-x-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:gap_x)
 
   gap_y =
     string("gap-y-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:gap_y)
 
   basis =
@@ -2247,13 +2135,13 @@ defmodule TailwindMerge.Parser do
 
   h =
     string("h-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:height)
 
   stroke_width =
     string("stroke-")
     |> choice([
-      integer_value,
+      integer(min: 1),
       parsec(:arbitrary_length),
       parsec(:arbitrary_value)
     ])
@@ -2270,7 +2158,7 @@ defmodule TailwindMerge.Parser do
       eos(),
       string("-")
       |> choice([
-        integer_value,
+        integer(min: 1),
         parsec(:arbitrary_length),
         parsec(:arbitrary_value),
         parsec(:arbitrary_variable)
@@ -2284,7 +2172,7 @@ defmodule TailwindMerge.Parser do
       eos(),
       string("-")
       |> choice([
-        integer_value,
+        integer(min: 1),
         parsec(:arbitrary_length),
         parsec(:arbitrary_value),
         parsec(:arbitrary_variable)
@@ -2351,119 +2239,119 @@ defmodule TailwindMerge.Parser do
   p =
     parsec(:maybe_negative)
     |> string("p-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:p)
 
   px =
     parsec(:maybe_negative)
     |> string("px-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:px)
 
   py =
     parsec(:maybe_negative)
     |> string("py-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:py)
 
   ps =
     parsec(:maybe_negative)
     |> string("ps-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:ps)
 
   pe =
     parsec(:maybe_negative)
     |> string("pe-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:pe)
 
   pt =
     parsec(:maybe_negative)
     |> string("pt-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:pt)
 
   pr =
     parsec(:maybe_negative)
     |> string("pr-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:pr)
 
   pb =
     parsec(:maybe_negative)
     |> string("pb-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:pb)
 
   pl =
     parsec(:maybe_negative)
     |> string("pl-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:pl)
 
   m =
     parsec(:maybe_negative)
     |> string("m-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:m)
 
   mx =
     parsec(:maybe_negative)
     |> string("mx-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:mx)
 
   my =
     parsec(:maybe_negative)
     |> string("my-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:my)
 
   ms =
     parsec(:maybe_negative)
     |> string("ms-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:ms)
 
   me =
     parsec(:maybe_negative)
     |> string("me-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:me)
 
   mt =
     parsec(:maybe_negative)
     |> string("mt-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:mt)
 
   mr =
     parsec(:maybe_negative)
     |> string("mr-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:mr)
 
   mb =
     parsec(:maybe_negative)
     |> string("mb-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:mb)
 
   ml =
     parsec(:maybe_negative)
     |>string("ml-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:ml)
 
   space_x =
     string("space-x-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:space_x)
 
   space_y =
     string("space-y-")
-    |> concat(parsec(:spacing_scale))
+    |> parsec(:spacing_scale)
     |> tag(:space_y)
 
   #
@@ -2472,32 +2360,32 @@ defmodule TailwindMerge.Parser do
 
   w =
     string("w-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:w)
 
   min_w =
     string("min-w-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:min_w)
 
   max_w =
     string("max-w-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:max_w)
 
   min_h =
     string("min-h-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:min_h)
 
   max_h =
     string("max-h-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:max_h)
 
   size =
     string("size-")
-    |> concat(parsec(:sizing_scale))
+    |> parsec(:sizing_scale)
     |> tag(:size)
 
   wrap =
