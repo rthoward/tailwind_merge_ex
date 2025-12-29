@@ -2319,10 +2319,15 @@ defmodule TailwindMerge.Parser do
     ])
     |> tag(:text_decoration)
 
-  text_shadow =
+  text_shadow_color =
     string("text-shadow-")
-    |> choice([string("none"), shadow])
-    |> tag(:text_shadow)
+    |> parsec(:color_value)
+    |> tag(:text_shadow_color)
+
+  text_shadow_size =
+    string("text-shadow-")
+    |> choice([string("none"), parsec(:tshirt)])
+    |> tag(:text_shadow_size)
 
   overflow_value =
     choice([
@@ -2593,15 +2598,15 @@ defmodule TailwindMerge.Parser do
       top, right, bottom, left,
       visibility,
       z,
+      text_shadow_size, text_shadow_color,
       text_color, text_alignment, text_wrap,
       font_size, font_weight, font_family, font_smoothing, font_style,
       fvn_normal, fvn_ordinal, fvn_slashed_zero, fvn_figure, fvn_spacing, fvn_fraction,
       tracking,
       line_clamp,
       leading,
-      text_shadow,
       list_image, list_style_position, list_style_type,
-      text_decoration_color, text_decoration_thickness, text_decoration_style,
+      text_decoration, text_decoration_color, text_decoration_thickness, text_decoration_style,
       underline_offset,
       text_transform,
       text_overflow,
@@ -2633,7 +2638,6 @@ defmodule TailwindMerge.Parser do
       grayscale,
       grow,
       mix_blend,
-      text_decoration,
       wrap,
       custom
     ])
