@@ -18,8 +18,6 @@ defmodule TailwindMerge.Parser do
 
   maybe_negative = optional(string("-"))
 
-  defparsec :maybe_negative, maybe_negative
-
   #
   # Units
   #
@@ -96,8 +94,6 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?/], min: 0)
     |> string(")")
 
-  defparsec(:css_function, css_function)
-
   arbitrary_value =
     ascii_char([?[])
     |> optional(
@@ -132,7 +128,6 @@ defmodule TailwindMerge.Parser do
     |> choice([css_function, length_variable, length_with_unit, string("0")])
     |> ascii_char([?]])
 
-  defparsec(:arbitrary_length, arbitrary_length)
 
   #
   # Common values
@@ -257,7 +252,6 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?%], min: 1)
     |> ascii_char([?)])
 
-  defparsec(:color_function, color_function)
 
   hex_color = string("#") |> ascii_string([?0..?9, ?a..?f, ?A..?F], min: 3, max: 8)
 
@@ -2632,7 +2626,13 @@ defmodule TailwindMerge.Parser do
       custom
     ])
 
-  defparsec(:class, class)
-  defparsec(:modifiers, modifiers)
-  defparsec(:arbitrary_color_value, arbitrary_color_value)
+  defparsec :class, class
+  defparsec :modifiers, modifiers
+  defparsec :arbitrary_color_value, arbitrary_color_value
+
+  defparsec :maybe_negative, maybe_negative
+  defparsec :css_function, css_function
+  defparsec :arbitrary_length, arbitrary_length
+  defparsec :color_function, color_function
+  defparsec :tshirt, tshirt
 end
