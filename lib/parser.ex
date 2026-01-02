@@ -1,5 +1,6 @@
 defmodule TailwindMerge.Parser do
   import NimbleParsec
+  import TailwindMerge.ASCII
 
   number = integer(min: 1) |> optional(string(".") |> integer(min: 1))
   fraction = integer(min: 1) |> string("/") |> integer(min: 1)
@@ -107,7 +108,7 @@ defmodule TailwindMerge.Parser do
 
   arbitrary_var =
     ascii_char([?(])
-    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
+    |> ascii_string(printable(except: ~c"[]()"), min: 1)
     |> ascii_char([?)])
 
   arbitrary_property =
@@ -125,9 +126,7 @@ defmodule TailwindMerge.Parser do
   # Length
   #
 
-  length_variable =
-    string("length:")
-    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?., ?-, ?(, ?), ?/], min: 1)
+  length_variable = string("length:") |> ascii_string(printable(), min: 1)
 
   arbitrary_length =
     ascii_char([?[])
