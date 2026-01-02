@@ -2405,13 +2405,13 @@ defmodule TailwindMerge.Parser do
   custom = ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/], min: 1)
 
   regular_modifier =
-    ascii_string([?a..?z, ?A..?Z], min: 1)
+    ascii_string([?a..?z, ?A..?Z, ?0..?9, ?-], min: 1)
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:regular_modifier)
 
   arbitrary_modifier =
     ignore(ascii_char([?[]))
-    |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?/, ?@, ?(, ?), ?{, ?}, ?:], min: 1)
+    |> ascii_string(printable(except: ~c"]:"), min: 1)
     |> ignore(ascii_char([?]]))
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:arbitrary_modifier)
