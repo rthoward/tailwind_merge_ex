@@ -110,6 +110,17 @@ defmodule TailwindMerge.Parser do
     |> ascii_string([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ?:], min: 1)
     |> ascii_char([?)])
 
+  arbitrary_property =
+    ignore(string("["))
+    |> ascii_string(printable(except: ~c"[]:"), min: 1)
+    |> ignore(ascii_string([?:], min: 1))
+    |> ascii_string(printable(except: ~c"[]"), min: 1)
+    |> ignore(string("]"))
+    |> post_traverse({:tag_arbitrary_property, []})
+
+  defp tag_arbitrary_property(rest, [_val, prop], context, _position, _offset),
+    do: {rest, [{:arbitrary_property, prop}], context}
+
   #
   # Length
   #
@@ -2410,6 +2421,7 @@ defmodule TailwindMerge.Parser do
 
   class =
     choice([
+      arbitrary_property,
       bg_attachment, bg_clip, bg_origin, bg_repeat, bg_blend,
       gradient_from_pos, gradient_via_pos, gradient_to_pos, gradient_from, gradient_via, gradient_to,
       bg, bg_size, bg_image, bg_position,
