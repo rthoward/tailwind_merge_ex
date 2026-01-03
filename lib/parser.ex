@@ -108,7 +108,7 @@ defmodule TailwindMerge.Parser do
 
   arbitrary_var =
     ascii_char([?(])
-    |> ascii_string(printable(except: ~c"[]()"), min: 1)
+    |> ascii_string(printable(except: ~c"()"), min: 1)
     |> ascii_char([?)])
 
   arbitrary_property =
@@ -121,6 +121,19 @@ defmodule TailwindMerge.Parser do
 
   defp tag_arbitrary_property(rest, [_val, prop], context, _position, _offset),
     do: {rest, [{:arbitrary_property, prop}], context}
+
+  scale_position =
+    choice([
+      string("bottom"),
+      string("center"),
+      string("left-bottom"),
+      string("left-top"),
+      string("left"),
+      string("right-bottom"),
+      string("right-top"),
+      string("right"),
+      string("top")
+  ])
 
   #
   # Length
@@ -262,10 +275,10 @@ defmodule TailwindMerge.Parser do
     |> parsec(:color_value)
     |> ascii_char([?]])
 
-  bg =
+  bg_color =
     string("bg-")
     |> parsec(:color_value)
-    |> tag(:bg)
+    |> tag(:bg_color)
 
   text_color =
     string("text-")
@@ -799,17 +812,10 @@ defmodule TailwindMerge.Parser do
   bg_position =
     string("bg-")
     |> choice([
-      string("bottom"),
-      string("center"),
-      string("left-bottom"),
-      string("left-top"),
-      string("left"),
-      string("right-bottom"),
-      string("right-top"),
-      string("right"),
-      string("top"),
-      parsec(:arbitrary_val),
-      parsec(:arbitrary_var)
+      parsec(:scale_position),
+      labelled_var(~w(position percentage)),
+      labelled_val(~w(position percentage)),
+      string("position-") |> choice([parsec(:arbitrary_var), parsec(:arbitrary_val)])
     ])
     |> tag(:bg_position)
 
@@ -832,7 +838,7 @@ defmodule TailwindMerge.Parser do
       string("auto"),
       string("cover"),
       string("contain"),
-      parsec(:arbitrary_length),
+      labelled_val(~w(length size bg-size)),
       parsec(:arbitrary_val),
       parsec(:arbitrary_var)
     ])
@@ -1446,15 +1452,7 @@ defmodule TailwindMerge.Parser do
   object_position =
     string("object-")
     |> choice([
-      string("bottom"),
-      string("center"),
-      string("left-bottom"),
-      string("left-top"),
-      string("left"),
-      string("right-bottom"),
-      string("right-top"),
-      string("right"),
-      string("top"),
+      parsec(:scale_position),
       parsec(:arbitrary_val),
       parsec(:arbitrary_var)
     ])
@@ -2411,7 +2409,7 @@ defmodule TailwindMerge.Parser do
       arbitrary_property,
       bg_attachment, bg_clip, bg_origin, bg_repeat, bg_blend,
       gradient_from_pos, gradient_via_pos, gradient_to_pos, gradient_from, gradient_via, gradient_to,
-      bg, bg_size, bg_image, bg_position,
+      bg_position, bg_size, bg_image, bg_color,
       backdrop_blur,
       backdrop_brightness,
       backdrop_contrast,
@@ -2526,6 +2524,7 @@ defmodule TailwindMerge.Parser do
   defcombinatorp :color_function, color_function
   defcombinatorp :color_value, color_value
   defcombinatorp :css_function, css_function
+  defcombinatorp :scale_position, scale_position
   defcombinatorp :maybe_negative, maybe_negative
   defcombinatorp :scale_align_primary_axis, scale_align_primary_axis
   defcombinatorp :scale_align_secondary_axis, scale_align_secondary_axis
