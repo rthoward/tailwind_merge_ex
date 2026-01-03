@@ -126,7 +126,7 @@ defmodule TailwindMerge.Parser do
   # Length
   #
 
-  length_variable = string("length:") |> ascii_string(printable(), min: 1)
+  length_variable = string("length:") |> ascii_string(printable(except: ~c"]"), min: 1)
 
   arbitrary_length =
     ascii_char([?[])
