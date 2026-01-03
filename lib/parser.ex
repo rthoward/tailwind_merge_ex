@@ -1546,26 +1546,14 @@ defmodule TailwindMerge.Parser do
   # Typography
   #
 
-  font_size =
+  text_size =
     string("text-")
     |> choice([
-      string("xs"),
-      string("sm"),
-      string("base"),
-      string("lg"),
-      string("xl"),
-      string("2xl"),
-      string("3xl"),
-      string("4xl"),
-      string("5xl"),
-      string("6xl"),
-      string("7xl"),
-      string("8xl"),
-      string("9xl"),
+      parsec(:tshirt),
       parsec(:arbitrary_length),
       parsec(:arbitrary_var)
     ])
-    |> tag(:font_size)
+    |> tag(:text_size)
 
   font_smoothing =
     choice([
@@ -2484,8 +2472,8 @@ defmodule TailwindMerge.Parser do
       visibility,
       z,
       text_shadow_size, text_shadow_color,
-      text_color, text_alignment, text_wrap,
-      font_size, font_weight, font_family, font_smoothing, font_style,
+      text_color, text_alignment, text_wrap, text_size,
+      font_weight, font_family, font_smoothing, font_style,
       fvn_normal, fvn_ordinal, fvn_slashed_zero, fvn_figure, fvn_spacing, fvn_fraction,
       tracking,
       line_clamp,
