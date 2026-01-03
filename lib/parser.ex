@@ -2412,7 +2412,7 @@ defmodule TailwindMerge.Parser do
   arbitrary_modifier =
     ignore(ascii_char([?[]))
     |> ascii_string(printable(except: ?]), min: 1)
-    |> ignore(ascii_char([?]]))
+    |> ignore(repeat(ascii_char([?]])))
     |> ignore(ascii_char([?:]))
     |> unwrap_and_tag(:arbitrary_modifier)
 
